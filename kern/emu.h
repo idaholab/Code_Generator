@@ -157,38 +157,6 @@ class Emu : public NetworkHardware
      */
     virtual std::vector<std::string> GenerateTraceCpp();
     
-    /**
-     * \brief Generate build link python code.
-     * \return build link code
-     */
-    virtual std::vector<std::string> GenerateNetworkHardwarePython();
-
-    /**
-     * \brief Generate build of the net device container python code.
-     * \return net device container code
-     */
-    virtual std::vector<std::string> GenerateNetDevicePython();
-
-    /**
-     * \brief Rewritted from base class.
-     * \return vars code
-     * \see Link
-     */
-    std::vector<std::string> GenerateVarsPython();
-
-    /**
-     * \brief Rewritted from base class.
-     * \return cmd line code
-     * \see Link
-     */
-    virtual std::vector<std::string> GenerateCmdLinePython();
-
-    /**
-     * \brief Generate the trace line python code.
-     * \return trace line
-     */
-    virtual std::vector<std::string> GenerateTracePython();
 };
 
 #endif /* EMU_H */
-

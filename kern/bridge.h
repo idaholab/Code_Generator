@@ -105,24 +105,6 @@ class Bridge : public NetworkHardware
      */
     virtual std::vector<std::string> GenerateTraceCpp();
     
-    /**
-     * \brief Generate build link python code.
-     * \return build link code
-     */
-    virtual std::vector<std::string> GenerateNetworkHardwarePython();
-
-    /**
-     * \brief Generate build of the net device container for python.
-     * \return net device container code
-     */
-    virtual std::vector<std::string> GenerateNetDevicePython();
-
-    /**
-     * \brief Generate trace line for python.
-     * \return trace line code
-     */
-    virtual std::vector<std::string> GenerateTracePython();
 };
 
 #endif /* BRIDGE_H */
-

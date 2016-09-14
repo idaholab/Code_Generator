@@ -1,0 +1,124 @@
+   <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<!-- 
+	 nodeType: a simpleType enumerating all of the node types possible in a 
+	 topology model. Other than a label for general classes of devices I'm not sure it represents anything else
+	 other than an implied functionality this may change in the future. The only exception is a
+	 "station" but I'm not sure that cannot be eleminated, as that can be represented with a PC and 
+	 a wireless link.
+	-->
+	<xsd:simpleType name="nodeType" final="restriction">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Pc"/> <!-- Pc represents a computer -->
+			<xsd:enumeration value="Router"/> <!-- Router represents a Router -->
+			<xsd:enumeration value="Bridge"/> <!-- Bridge represents a Bridge -->
+			<xsd:enumeration value="Station"/> <!-- Station represents a "wireless PC"??? -->
+			<xsd:enumeration value="AccessPoint"/> <!-- AccessPoint represents an access point -->
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<!--
+	hardwareType: a simpleType enumerating all the possible network hardware types available for a topology
+	-->
+	<xsd:simpleType name="hardwareType" final="restriction">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Ap"/>
+			<xsd:enumeration value="Bridge"/>
+			<xsd:enumeration value="Hub"/>
+			<xsd:enumeration value="PointToPoint"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<!-- 
+	 appType: a simple type enumerating all of the use types available for a 
+	 topology model analysis. There is an implied functionality based on the type and that functionality
+	 should be defined in the associated tag definition.
+	 -->
+	<xsd:simpleType name="appType" final="restriction">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="UdpEcho"/><!-- represents a simple UDP echo connection between devices(nodes) -->
+			<xsd:enumeration value="Udp"/>
+			<xsd:enumeration value="UdpCosem"/>
+			<xsd:enumeration value="TcpLargeTransfer"/>
+			<xsd:enumeration value="Ping"/>
+			<xsd:enumeration value="DataConcentrator"/>
+			<xsd:enumeration value="DemandResponse"/>
+			<xsd:enumeration value="MeterDataManagement"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+         <xsd:element name="Gen">
+               <xsd:complexType>
+                     <xsd:sequence>
+                           <xsd:element name="Nodes">
+                                 <xsd:complexType>
+                                       <xsd:sequence>
+                                             <xsd:element name="node" maxOccurs="unbounded">
+                                                   <xsd:complexType>
+                                                         <xsd:sequence>
+                                                               <xsd:element name="type" type="nodeType"></xsd:element>
+                                                               <xsd:element name="name" type="xsd:string"></xsd:element>
+                                                         </xsd:sequence>
+                                                   </xsd:complexType>
+                                             </xsd:element>
+                                       </xsd:sequence>
+                                 </xsd:complexType>
+                           </xsd:element>
+                           <xsd:element name="NetworkHardwares">
+                                 <xsd:complexType>
+                                       <xsd:sequence>
+                                             <xsd:element name="networkHardware" maxOccurs="unbounded">
+                                                   <xsd:complexType>
+                                                         <xsd:sequence>
+                                                               <xsd:element name="type" type="hardwareType"></xsd:element>
+                                                               <xsd:element name="name" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="dataRate" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="linkDelay" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="enableTrace" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="mobility" type="xsd:string" minOccurs="0"></xsd:element>
+                                                               <xsd:element name="connectedNodes">
+                                                                     <xsd:complexType>
+                                                                           <xsd:sequence>
+                                                                                 <xsd:element name="name" type="xsd:string" maxOccurs="unbounded"></xsd:element>
+                                                                           </xsd:sequence>
+                                                                     </xsd:complexType>
+                                                               </xsd:element>
+                                                         </xsd:sequence>
+                                                   </xsd:complexType>
+                                             </xsd:element>
+                                       </xsd:sequence>
+                                 </xsd:complexType>
+                           </xsd:element>
+                           <xsd:element name="Applications">
+                                 <xsd:complexType>
+                                       <xsd:sequence>
+                                             <xsd:element name="application" minOccurs="0" maxOccurs="unbounded">
+                                                   <xsd:complexType>
+                                                         <xsd:sequence>
+                                                               <xsd:element name="type" type="appType"></xsd:element>
+                                                               <xsd:element name="name" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="sender" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="receiver" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="startTime" type="xsd:int"></xsd:element>
+                                                               <xsd:element name="endTime" type="xsd:int"></xsd:element>
+                                                               <xsd:element name="special" minOccurs="0">
+                                                                     <xsd:complexType>
+                                                                           <xsd:sequence>
+                                                                                 <xsd:element name="port" type="xsd:int" minOccurs="0"></xsd:element>
+                                                                                 <xsd:element name="interval" type="xsd:int" minOccurs="0"></xsd:element>
+                                                                                 <xsd:element name="readingTime" type="xsd:int" minOccurs="0"></xsd:element>
+                                                                                 <xsd:element name="packetSize" type="xsd:int" minOccurs="0"></xsd:element>
+                                                                                 <xsd:element name="maxPacketCount" type="xsd:int" minOccurs="0"></xsd:element>
+                                                                                 <xsd:element name="packetIntervalTime" type="xsd:string" minOccurs="0"></xsd:element>
+                                                                           </xsd:sequence>
+                                                                     </xsd:complexType>
+                                                               </xsd:element>
+                                                         </xsd:sequence>
+                                                   </xsd:complexType>
+                                             </xsd:element>
+                                       </xsd:sequence>
+                                 </xsd:complexType>
+                           </xsd:element>
+                     </xsd:sequence>
+               </xsd:complexType>
+         </xsd:element>
+   </xsd:schema>

@@ -147,36 +147,6 @@ class Tap : public NetworkHardware
      */
     std::vector<std::string> GenerateCmdLineCpp();
     
-    /**
-     * \brief Function re-writted from link main class.
-     * \return tap bridge code
-     */
-    std::vector<std::string> GenerateTapBridgePython();
-
-    /**
-     * \brief Function re-writted from link main class.
-     * \return vars code
-     */
-    std::vector<std::string> GenerateVarsPython();
-
-    /**
-     * \brief Function re-wrotted from link main class.
-     * \return cmd line code
-     */
-    std::vector<std::string> GenerateCmdLinePython();
-    
-    /**
-     * \brief Generate link python code.
-     * \return link code
-     */
-    virtual std::vector<std::string> GenerateNetworkHardwarePython();
-
-    /**
-     * \brief Generate net device container python code.
-     * \return net device container code
-     */
-    virtual std::vector<std::string> GenerateNetDevicePython();
 };
 
 #endif /* TAP_H */
-

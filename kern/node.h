@@ -119,20 +119,6 @@ class Node
     std::vector<std::string> GenerateIpStackCpp();
 
     /**
-     * \brief Generate node python code.
-     * This function return a vector which contain the declaration and instanciation of the node
-     * \return node code
-     */
-    std::vector<std::string> GenerateNodePython();
-
-    /**
-     * \brief Generate IP stack python code.
-     * This function return a vector which contain the c++ code from the Ipv4 stack declaration and instanciation
-     * \return IP stack code.
-     */
-    std::vector<std::string> GenerateIpStackPython();
-
-    /**
      * \brief Set node name.
      * \param nodeName node name
      */
@@ -210,4 +196,3 @@ class Node
 };
 
 #endif /* NODE_H */
-

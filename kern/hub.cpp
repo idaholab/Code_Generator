@@ -42,6 +42,7 @@ std::vector<std::string> Hub::GenerateHeader()
 {
   std::vector<std::string> headers;
   headers.push_back("#include \"ns3/bridge-module.h\"");
+  headers.push_back("#include \"ns3/csma-module.h\"");
 
   return headers;
 }
@@ -49,6 +50,8 @@ std::vector<std::string> Hub::GenerateHeader()
 std::vector<std::string> Hub::GenerateNetworkHardwareCpp()
 {
   std::vector<std::string> generatedLink;
+
+  generatedLink.push_back("");
   generatedLink.push_back("CsmaHelper csma_" + this->GetNetworkHardwareName() + ";");
   generatedLink.push_back("csma_" + this->GetNetworkHardwareName() + ".SetChannelAttribute (\"DataRate\", DataRateValue (" + this->GetDataRate() + "));");
   generatedLink.push_back("csma_" + this->GetNetworkHardwareName() + ".SetChannelAttribute (\"Delay\",  TimeValue (MilliSeconds (" + this->GetNetworkHardwareDelay() + ")));");
@@ -87,46 +90,3 @@ std::vector<std::string> Hub::GenerateTraceCpp()
 
   return trace;
 }
-
-std::vector<std::string> Hub::GenerateNetworkHardwarePython()
-{
-  std::vector<std::string> ret;
-  
-  ret.push_back("csma_" + this->GetNetworkHardwareName() + " = ns3.CsmaHelper()");
-  ret.push_back("csma_" + this->GetNetworkHardwareName() + ".SetChannelAttribute(\"DataRate\", ns3.DataRateValue(ns3.DataRate(" + this->GetDataRate() + ")))");
-  ret.push_back("csma_" + this->GetNetworkHardwareName() + ".SetChannelAttribute(\"Delay\",  ns3.TimeValue(ns3.MilliSeconds(" + this->GetNetworkHardwareDelay() + ")))");
-  return ret;
-}
-
-std::vector<std::string> Hub::GenerateNetDevicePython()
-{
-  std::vector<std::string> ret;
-  std::vector<std::string> allNodes = this->GroupAsNodeContainerPython();
-  
-  for(size_t i = 0; i <  allNodes.size(); i++)
-  {
-    ret.push_back(allNodes.at(i));
-  }
-  ret.push_back(this->GetNdcName() + " = csma_" + this->GetNetworkHardwareName() + ".Install(" + this->GetAllNodeContainer() + ")");
-
-  return ret;
-}
-
-std::vector<std::string> Hub::GenerateTracePython()
-{
-  std::vector<std::string> trace;
-  
-  if(this->GetTrace())
-  {
-    if(this->GetPromisc())
-    {
-      trace.push_back("csma_" + this->GetNetworkHardwareName() + ".EnablePcapAll(\"csma_" + this->GetNetworkHardwareName() + "\", true)");
-    }
-    else
-    {
-      trace.push_back("csma_" + this->GetNetworkHardwareName() + ".EnablePcapAll(\"csma_" + this->GetNetworkHardwareName() + "\", false)");
-    }
-  }
-  return trace;
-}
-

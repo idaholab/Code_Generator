@@ -182,44 +182,6 @@ class NetworkHardware
     virtual std::vector<std::string> GenerateTraceCpp();
 
     /**
-     * \brief Generate link python code.
-     * \return link code
-     */
-    virtual std::vector<std::string> GenerateNetworkHardwarePython() = 0;
-
-    /**
-     * \brief Generate net device container python code.
-     *
-     * The net device container contain all nodes installed by the link.
-     * \return net device container code
-     */
-    virtual std::vector<std::string> GenerateNetDevicePython() = 0;
-
-    /**
-     * \brief Generate tap bridge python code.
-     * \return tap bridge code
-     */
-    virtual std::vector<std::string> GenerateTapBridgePython();
-
-    /**
-     * \brief Generate vars python code.
-     * \return vars code
-     */
-    virtual std::vector<std::string> GenerateVarsPython();
-
-    /**
-     * \brief Generate cmd line python code.
-     * \return cmd line code
-     */
-    virtual std::vector<std::string> GenerateCmdLinePython();
-
-    /**
-     * \brief Generate trace line python code.
-     * \return trace line code
-     */
-    virtual std::vector<std::string> GenerateTracePython();
-
-    /**
      * \brief Get link number.
      * \return link number
      */
@@ -310,12 +272,6 @@ class NetworkHardware
     std::vector<std::string> GroupAsNodeContainerCpp();
 
     /**
-     * \brief Group all link installed nodes.
-     * \return all nodes
-     */
-    std::vector<std::string> GroupAsNodeContainerPython();
-
-    /**
      * \brief Get all node container name.
      * \return node container name
      */
@@ -359,4 +315,3 @@ class NetworkHardware
 };
 
 #endif /* NETWORKHARDWARE_H */
-

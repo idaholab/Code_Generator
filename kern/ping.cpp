@@ -42,7 +42,9 @@ Ping::~Ping()
 std::vector<std::string> Ping::GenerateHeader()
 {
   std::vector<std::string> headers;
-  headers.push_back("#include \"ns3/helper-module.h\"");
+  headers.push_back("#include \"ns3/applications-module.h\"");
+  headers.push_back("#include \"ns3/v4ping-helper.h\"");
+  headers.push_back("#include \"ns3/v4ping.h\"");
 
   return headers;
 }
@@ -53,8 +55,8 @@ std::vector<std::string> Ping::GenerateApplicationCpp(std::string netDeviceConta
 
   apps.push_back("InetSocketAddress dst_" + this->GetAppName() + " = InetSocketAddress (iface_" + netDeviceContainer + ".GetAddress(" + utils::integerToString(numberIntoNetDevice) + "));");
   apps.push_back("OnOffHelper onoff_" + this->GetAppName() + " = OnOffHelper (\"ns3::Ipv4RawSocketFactory\", dst_" + this->GetAppName() + ");");
-  apps.push_back("onoff_" + this->GetAppName() + ".SetAttribute (\"OnTime\", RandomVariableValue (ConstantVariable (1.0)));");
-  apps.push_back("onoff_" + this->GetAppName() + ".SetAttribute (\"OffTime\", RandomVariableValue (ConstantVariable (0.0)));");
+  apps.push_back("onoff_" + this->GetAppName() + ".SetAttribute (\"OnTime\", StringValue (\"ns3::ConstantRandomVariable[Constant=1]\"));");
+  apps.push_back("onoff_" + this->GetAppName() + ".SetAttribute (\"OffTime\", StringValue (\"ns3::ConstantRandomVariable[Constant=0]\"));");
 
   apps.push_back("ApplicationContainer apps_" + this->GetAppName() + " = onoff_" + this->GetAppName() + ".Install(" + this->GetSenderNode() + ".Get(0));");
   apps.push_back("apps_" + this->GetAppName() + ".Start (Seconds (" + this->GetStartTime() + ".1));");
@@ -72,29 +74,3 @@ std::vector<std::string> Ping::GenerateApplicationCpp(std::string netDeviceConta
 
   return apps;
 }
-
-std::vector<std::string> Ping::GenerateApplicationPython(std::string netDeviceContainer, size_t numberIntoNetDevice)
-{
-  std::vector<std::string> apps;
-
-  apps.push_back("dst_" + this->GetAppName() + " = ns3.InetSocketAddress(iface_" + netDeviceContainer + ".GetAddress(" + utils::integerToString(numberIntoNetDevice) + "))");
-  apps.push_back("onoff_" + this->GetAppName() + " = ns3.OnOffHelper(\"ns3::Ipv4RawSocketFactory\", dst_" + this->GetAppName() + ")");
-  apps.push_back("onoff_" + this->GetAppName() + ".SetAttribute(\"OnTime\", ns3.RandomVariableValue(ns3.ConstantVariable (1.0)))");
-  apps.push_back("onoff_" + this->GetAppName() + ".SetAttribute(\"OffTime\", ns3.RandomVariableValue(ns3.ConstantVariable (0.0)))");
-
-  apps.push_back("apps_" + this->GetAppName() + " = onoff_" + this->GetAppName() + ".Install(" + this->GetSenderNode() + ".Get(0))");
-  apps.push_back("apps_" + this->GetAppName() + ".Start(ns3.Seconds (" + this->GetStartTime() + ".1))");
-  apps.push_back("apps_" + this->GetAppName() + ".Stop(ns3.Seconds (" + this->GetEndTime() + ".1))");
-
-  apps.push_back("sink_" + this->GetAppName() + " = ns3.PacketSinkHelper(\"ns3::Ipv4RawSocketFactory\", dst_" + this->GetAppName() + ")");
-  apps.push_back("apps_" + this->GetAppName() + " = sink_" + this->GetAppName() + ".Install(" + this->GetReceiverNode() + ".Get(0))");
-  apps.push_back("apps_" + this->GetAppName() + ".Start(ns3.Seconds(" + this->GetStartTime() + ".0))");
-  apps.push_back("apps_" + this->GetAppName() + ".Stop(ns3.Seconds(" + this->GetEndTime() + ".2))");
-
-  apps.push_back("ping_" + this->GetAppName() + " = ns3.V4PingHelper(iface_" + netDeviceContainer + ".GetAddress(" + utils::integerToString(numberIntoNetDevice) + "))");
-  apps.push_back("apps_" + this->GetAppName() + " = ping_" + this->GetAppName() + ".Install(" + this->GetSenderNode() + ".Get(0))");
-  apps.push_back("apps_" + this->GetAppName() + ".Start (ns3.Seconds(" + this->GetStartTime() + ".2))");
-  apps.push_back("apps_" + this->GetAppName() + ".Stop (ns3.Seconds(" + this->GetEndTime() + ".0))");
-  return apps;
-}
-

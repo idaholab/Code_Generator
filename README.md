@@ -48,17 +48,17 @@ generator executable.
 
 Then simply issue:
 
- $ ./ns-3-codegenerator <filename>.xml <output_filename>
+ $ ./ns-3-codegenerator *filename.xml* *output_filename*
 
-The <filename>.xml contains a high level description of a network topology.  The
+The *filename.xml* contains a high level description of a network topology.  The
 provided output filename contains the ns-3 C++ statements that can be executed in
 ns-3 environment.
 
-To generate the API documentation (you need doxygen tool):
+To generate the XML class documentation (you need doxygen tool):
 
-$ doxygen Doxyfile
+$ make docs
 
-The HTML generated documentation is located in doc/html/ directory of sources.
+The HTML generated documentation is located in the same directory.
 
 License
 ------------------

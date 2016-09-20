@@ -38,6 +38,11 @@
 #include "ap.h"
 #include "ping.h"
 #include "udp-echo.h"
+#include "udp.h"
+#include "udp-cosem.h"
+#include "data-concentrator.h"
+#include "meter-data-management.h"
+#include "demand-response.h"
 #include "tcp-large-transfer.h"
 #include "tap.h"
 #include "emu.h"
@@ -70,6 +75,11 @@ Generator::Generator(const std::string &simulationName)
   this->m_indiceApplicationPing = 0; 
   this->m_indiceApplicationTcpLargeTransfer = 0;
   this->m_indiceApplicationUdpEcho = 0;
+  this->m_indiceApplicationUdp = 0;
+  this->m_indiceApplicationUdpCosem = 0;
+  this->m_indiceApplicationDataConcentrator = 0;
+  this->m_indiceApplicationMeterDataManagement = 0;
+  this->m_indiceApplicationDemandResponse = 0;
 
 }
 
@@ -113,7 +123,7 @@ void Generator::AddConfig(const std::string &config)
 //
 // Part of Node.
 //
-void Generator::AddNode(const std::string &type) 
+void Generator::AddNode(const std::string &type, const std::string &nodeName) 
 {
   size_t number = 1;
   Node *equi = NULL;
@@ -121,37 +131,37 @@ void Generator::AddNode(const std::string &type)
   // call to the right type constructor. 
   if(type == "Pc" || type == "Pc-group")
   {
-    equi = new Node(this->m_indiceNodePc, type, std::string("term_"), number);
+    equi = new Node(this->m_indiceNodePc, type, nodeName, number);
     this->m_indiceNodePc += 1;
   } 
   else if(type == "Router")
   {
-    equi = new Node(this->m_indiceNodeRouter, type, std::string("router_"), number);
+    equi = new Node(this->m_indiceNodeRouter, type, nodeName, number);
     this->m_indiceNodeRouter += 1;
   } 
-  else if(type == "Ap")
+  else if(type == "AccessPoint")
   {
-    equi = new Node(this->m_indiceNodeAp, type, std::string("ap_"), number);
+    equi = new Node(this->m_indiceNodeAp, type, nodeName, number);
     this->m_indiceNodeAp += 1;
   } 
   else if(type == "Station")
   {
-    equi = new Node(this->m_indiceNodeStation, type, std::string("station_"), number);
+    equi = new Node(this->m_indiceNodeStation, type, nodeName, number);
     this->m_indiceNodeStation += 1;
   } 
   else if(type == "Bridge")
   {
-    equi = new Node(this->m_indiceNodeBridge, type, std::string("bridge_"), number);
+    equi = new Node(this->m_indiceNodeBridge, type, nodeName, number);
     this->m_indiceNodeBridge += 1;
   } 
   else if(type == "Tap")
   {
-    equi = new Node(this->m_indiceNodeTap, type, std::string("tap_"), number);
+    equi = new Node(this->m_indiceNodeTap, type, nodeName, number);
     this->m_indiceNodeTap += 1;
   } 
   else if(type == "Emu")
   {
-    equi = new Node(this->m_indiceNodeEmu, type, std::string("emu_"), number);
+    equi = new Node(this->m_indiceNodeEmu, type, nodeName, number);
     this->m_indiceNodeEmu += 1;
   }
 
@@ -165,44 +175,44 @@ void Generator::AddNode(const std::string &type)
   }
 }
 
-void Generator::AddNode(const std::string &type, const size_t number) 
+void Generator::AddNode(const std::string &type, const std::string &nodeName, const size_t number) 
 {
   Node *equi = NULL;
 
   // call to the right type constructor. 
   if(type == "Pc" || type == "Pc-group")
   {
-    equi = new Node(this->m_indiceNodePc, type, std::string("term_"), number);
+    equi = new Node(this->m_indiceNodePc, type, nodeName, number);
     this->m_indiceNodePc += 1;
   } 
   else if(type == "Router")
   {
-    equi = new Node(this->m_indiceNodeRouter, type, std::string("router_"), number);
+    equi = new Node(this->m_indiceNodeRouter, type, nodeName, number);
     this->m_indiceNodeRouter += 1;
   } 
-  else if(type == "Ap")
+  else if(type == "AccessPoint")
   {
-    equi = new Node(this->m_indiceNodeAp, type, std::string("ap_"), number);
+    equi = new Node(this->m_indiceNodeAp, type, nodeName, number);
     this->m_indiceNodeAp += 1;
   } 
   else if(type == "Station")
   {
-    equi = new Node(this->m_indiceNodeStation, type, std::string("station_"), number);
+    equi = new Node(this->m_indiceNodeStation, type, nodeName, number);
     this->m_indiceNodeStation += 1;
   } 
   else if(type == "Bridge")
   {
-    equi = new Node(this->m_indiceNodeBridge, type, std::string("bridge_"), number);
+    equi = new Node(this->m_indiceNodeBridge, type, nodeName, number);
     this->m_indiceNodeBridge += 1;
   } 
   else if(type == "Tap")
   {
-    equi = new Node(this->m_indiceNodeTap, type, std::string("tap_"), number);
+    equi = new Node(this->m_indiceNodeTap, type, nodeName, number);
     this->m_indiceNodeTap += 1;
   }
   else if(type == "Emu")
   {
-    equi = new Node(this->m_indiceNodeEmu, type, std::string("emu_"), number);
+    equi = new Node(this->m_indiceNodeEmu, type, nodeName, number);
     this->m_indiceNodeEmu += 1;
   }
 
@@ -268,9 +278,7 @@ size_t Generator::GetNNodes() const
 //
 // Part of Application.
 //
-void Generator::AddApplication(const std::string &type, const std::string &senderNode, 
-    const std::string &receiverNode, const size_t &startTime, 
-    const size_t &endTime, const size_t &port) 
+void Generator::AddApplication(const std::string &type, const std::string &senderNode, const std::string &receiverNode, const size_t &startTime, const size_t &endTime, const size_t &port) 
 {
   if(type == "UdpEcho")
   {
@@ -278,12 +286,28 @@ void Generator::AddApplication(const std::string &type, const std::string &sende
     this->m_indiceApplicationUdpEcho += 1;
     this->m_listApplication.push_back(app);
   }
+
+  else if(type == "Udp")
+  {
+    Udp *app = new Udp(type, this->m_indiceApplicationUdp, senderNode, receiverNode, startTime, endTime, port);
+    this->m_indiceApplicationUdp += 1;
+    this->m_listApplication.push_back(app);
+  }
+
+  else if(type == "UdpCosem")
+  {
+    UdpCosem *app = new UdpCosem(type, this->m_indiceApplicationUdpCosem, senderNode, receiverNode, startTime, endTime, port);
+    this->m_indiceApplicationUdpCosem += 1;
+    this->m_listApplication.push_back(app);
+  }
+
   else if(type == "TcpLargeTransfer")
   {
     TcpLargeTransfer *app = new TcpLargeTransfer(type, this->m_indiceApplicationTcpLargeTransfer, senderNode, receiverNode, startTime, endTime, port);
     this->m_indiceApplicationTcpLargeTransfer += 1;
     this->m_listApplication.push_back(app);
   }
+
   else
   {
     throw std::logic_error("Application add failed.");
@@ -291,8 +315,7 @@ void Generator::AddApplication(const std::string &type, const std::string &sende
 
 }
 
-void Generator::AddApplication(const std::string &type, const std::string &senderNode, 
-    const std::string &receiverNode, const size_t &startTime, const size_t &endTime) 
+void Generator::AddApplication(const std::string &type, const std::string &senderNode, const std::string &receiverNode, const size_t &startTime, const size_t &endTime) 
 {
   if(type == "Ping")
   {
@@ -300,6 +323,36 @@ void Generator::AddApplication(const std::string &type, const std::string &sende
     this->m_indiceApplicationPing += 1;
     this->m_listApplication.push_back(app);
   }
+
+  else if(type == "DataConcentrator")
+  {
+    DataConcentrator *app = new DataConcentrator(type, this->m_indiceApplicationDataConcentrator, senderNode, receiverNode, startTime, endTime);
+    this->m_indiceApplicationDataConcentrator += 1;
+    this->m_listApplication.push_back(app);
+  }
+
+  else if(type == "DemandResponse")
+  {
+    DemandResponse *app = new DemandResponse(type, this->m_indiceApplicationDemandResponse, senderNode, receiverNode, startTime, endTime);
+    this->m_indiceApplicationDemandResponse += 1;
+    this->m_listApplication.push_back(app);
+  }
+
+  else
+  {
+    throw std::logic_error("Application add failed.");
+  } 
+}
+
+void Generator::AddApplication(const std::string &type, const std::string &senderNode, const std::string &receiverNode, const size_t &startTime, const size_t &endTime, const size_t &interval, const size_t &readingTime) 
+{
+  if(type == "MeterDataManagement")
+  {
+    MeterDataManagement *app = new MeterDataManagement(type, this->m_indiceApplicationMeterDataManagement, senderNode, receiverNode, startTime, endTime, interval, readingTime);
+    this->m_indiceApplicationMeterDataManagement += 1;
+    this->m_listApplication.push_back(app);
+  }
+
   else
   {
     throw std::logic_error("Application add failed.");
@@ -463,14 +516,28 @@ void Generator::GenerateCodeCpp(std::string fileName)
     this->m_cppFile.open(fileName.c_str());
   }
 
+  this->WriteCpp("//////////////////////////////////////////////////////////////////////////////////////");
+  this->WriteCpp("//");
+  this->WriteCpp("// This source file was automatically generated using <" + this->m_simulationName + "> XML file.");
+  this->WriteCpp("//");
+  this->WriteCpp("//////////////////////////////////////////////////////////////////////////////////////");
+
+this->WriteCpp("");
+
   //
   // Generate headers 
   //
-  this->WriteCpp("#include \"ns3/simulator-module.h\"");
-  this->WriteCpp("#include \"ns3/node-module.h\"");
   this->WriteCpp("#include \"ns3/core-module.h\"");
-  this->WriteCpp("#include \"ns3/common-module.h\"");
   this->WriteCpp("#include \"ns3/global-route-manager.h\"");
+  this->WriteCpp("#include \"ns3/internet-module.h\"");
+  this->WriteCpp("");
+  this->WriteCpp("#include \"ns3/flow-monitor-helper.h\"");
+  this->WriteCpp("#include \"ns3/ipv4-global-routing-helper.h\"");
+  this->WriteCpp("#include \"ns3/ipv4-flow-classifier.h\"");
+  this->WriteCpp("");
+  this->WriteCpp("#include <map>");
+
+  this->WriteCpp("");
 
   std::vector<std::string> allHeaders = GenerateHeader();
   for(size_t i = 0; i <  allHeaders.size(); i++)
@@ -480,6 +547,13 @@ void Generator::GenerateCodeCpp(std::string fileName)
 
   this->WriteCpp("");
   this->WriteCpp("using namespace ns3;");
+  this->WriteCpp("using namespace std;");
+  this->WriteCpp("");
+
+//added logging statements
+  std::string prefixName(fileName, 0, fileName.find('.'));
+  this->WriteCpp("NS_LOG_COMPONENT_DEFINE (\"" + prefixName + "\");");
+
   this->WriteCpp("");
 
   this->WriteCpp("int main(int argc, char *argv[])");
@@ -507,6 +581,28 @@ void Generator::GenerateCodeCpp(std::string fileName)
   } 
 
   this->WriteCpp("  cmd.Parse (argc, argv);");
+
+//added logging statements
+  this->WriteCpp("");
+/// Added for cosem simulation only
+     this->WriteCpp("LogComponentEnable (\"CosemApplicationLayerClient\", LOG_LEVEL_INFO);");
+     this->WriteCpp("LogComponentEnable (\"CosemApplicationLayerServer\", LOG_LEVEL_INFO);");
+     this->WriteCpp("LogComponentEnable (\"CosemApplicationsProcessClient\", LOG_LEVEL_INFO);");
+     this->WriteCpp("LogComponentEnable (\"CosemApplicationsProcessServer\", LOG_LEVEL_INFO);");
+     this->WriteCpp("LogComponentEnable (\"UdpCosemWrapperLayerClient\", LOG_LEVEL_INFO);");
+     this->WriteCpp("LogComponentEnable (\"UdpCosemWrapperLayerServer\", LOG_LEVEL_INFO);");
+     this->WriteCpp("LogComponentEnable (\"DataConcentratorApplication\", LOG_LEVEL_INFO);");
+     this->WriteCpp("LogComponentEnable (\"DemandResponseApplication\", LOG_LEVEL_INFO);");
+     this->WriteCpp("LogComponentEnable (\"MeterDataManagementApplication\", LOG_LEVEL_INFO);");
+  this->WriteCpp("");
+
+  this->WriteCpp("  Time::SetResolution (Time::NS);");
+/***
+  this->WriteCpp("  LogComponentEnable (\"UdpEchoClientApplication\", LOG_LEVEL_INFO);");
+  this->WriteCpp("  LogComponentEnable (\"UdpEchoServerApplication\", LOG_LEVEL_INFO);");
+***/
+  this->WriteCpp("  ///LogComponentEnableAll (LOG_LEVEL_INFO);");
+  this->WriteCpp("");
 
   //
   // Generate Optional configuration
@@ -546,6 +642,7 @@ void Generator::GenerateCodeCpp(std::string fileName)
   //
   this->WriteCpp("");
   this->WriteCpp("  /* Build link net device container. */");
+
   std::vector<std::string> linkNdcBuild = GenerateNetDeviceCpp(); 
   for(size_t i = 0; i <  linkNdcBuild.size(); i++)
   {
@@ -568,6 +665,7 @@ void Generator::GenerateCodeCpp(std::string fileName)
   // 
   this->WriteCpp("");
   this->WriteCpp("  /* IP assign. */");
+  this->WriteCpp("  map<string, string> ipMap;");
   std::vector<std::string> allAssign = GenerateIpAssignCpp();
   for(size_t i = 0; i <  allAssign.size(); i++)
   {
@@ -615,6 +713,7 @@ void Generator::GenerateCodeCpp(std::string fileName)
   //
   this->WriteCpp("");
   this->WriteCpp("  /* Simulation. */");
+  this->WriteCpp("");
 
   this->WriteCpp("  /* Pcap output. */");
   std::vector<std::string> allTrace = GenerateTraceCpp();
@@ -622,6 +721,12 @@ void Generator::GenerateCodeCpp(std::string fileName)
   {
     this->WriteCpp("  " + allTrace.at(i));
   } 
+
+  this->WriteCpp("");
+  this->WriteCpp("  /* Flow Monitor */");
+
+  this->WriteCpp("  FlowMonitorHelper flowmonHelper;");
+  this->WriteCpp("  Ptr<FlowMonitor> monitor = flowmonHelper.InstallAll();");
 
   /* Set stop time. */
   size_t stopTime = 0;/* default stop time. */
@@ -632,14 +737,136 @@ void Generator::GenerateCodeCpp(std::string fileName)
       stopTime = (this->m_listApplication.at(i))->GetEndTimeNumber();
     }
   }
-  stopTime += 1;
+  stopTime += 50;
+
+  this->WriteCpp("");
 
   this->WriteCpp("  /* Stop the simulation after x seconds. */");
   this->WriteCpp("  uint32_t stopTime = "+ utils::integerToString(stopTime) +";"); 
   this->WriteCpp("  Simulator::Stop (Seconds (stopTime));");
 
+  this->WriteCpp("");
   this->WriteCpp("  /* Start and clean simulation. */");
   this->WriteCpp("  Simulator::Run ();");
+
+  this->WriteCpp("  flowmonHelper.SerializeToXmlFile (\"" + prefixName + ".flowmonitor\", true, true);");
+  this->WriteCpp("  monitor->CheckForLostPackets ();");
+  this->WriteCpp("  Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmonHelper.GetClassifier ());");
+  this->WriteCpp("  std::map<FlowId, FlowMonitor::FlowStats> stats = monitor->GetFlowStats ();");
+  this->WriteCpp("  uint32_t txPacketsum = 0;");
+  this->WriteCpp("  uint32_t rxPacketsum = 0;");
+  this->WriteCpp("  uint32_t DropPacketsum = 0;");
+  this->WriteCpp("  uint32_t LostPacketsum = 0;");
+  this->WriteCpp("  double Delaysum = 0;");
+  this->WriteCpp("  std::string protocolName;");
+  this->WriteCpp("  const char *DroppedNames[] = { \"No Route\", \"TTL Expire\", \"Bad Checksum\", \"Queue\", \"Interface Down\", \"Route error\", \"Fragment timeout\", \"Unknown\" };");
+
+  this->WriteCpp("  NS_LOG_UNCOND(\" \");");
+  this->WriteCpp("  NS_LOG_UNCOND(\" \");");
+  this->WriteCpp("  NS_LOG_UNCOND(\"IP Address		Node Name\");");
+  this->WriteCpp("  NS_LOG_UNCOND(\"----------		---------\");");
+  this->WriteCpp("  for (map<string, string>::iterator it = ipMap.begin(); it!=ipMap.end(); ++it)");
+  this->WriteCpp("    NS_LOG_UNCOND(it->first << \"		\" << it->second);");
+
+  this->WriteCpp("");
+  this->WriteCpp("  for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i)");
+  this->WriteCpp("  {");
+  this->WriteCpp("    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);");
+  this->WriteCpp("    txPacketsum += i->second.txPackets;");
+  this->WriteCpp("    rxPacketsum += i->second.rxPackets;");
+  this->WriteCpp("    LostPacketsum += i->second.lostPackets;");
+  this->WriteCpp("    DropPacketsum += i->second.packetsDropped.size();");
+  this->WriteCpp("    Delaysum += i->second.delaySum.GetSeconds();");
+  this->WriteCpp("    NS_LOG_UNCOND(\">\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\">\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\">\");");
+  this->WriteCpp("");
+  this->WriteCpp("    if (t.protocol == 17)");
+  this->WriteCpp("            protocolName = \"UDP\";");
+  this->WriteCpp("    else if (t.protocol == 6)");
+  this->WriteCpp("              protocolName = \"TCP\";");
+  this->WriteCpp("            else protocolName = \"UNK\";");
+  this->WriteCpp("            ");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Flow ID: \" << i->first);");
+  this->WriteCpp("    NS_LOG_UNCOND(\"======\");");
+  this->WriteCpp("");
+  this->WriteCpp("    std::ostringstream srcAddrOss;");
+  this->WriteCpp("    std::ostringstream dstAddrOss;");
+  this->WriteCpp("    t.sourceAddress.Print (srcAddrOss);");
+  this->WriteCpp("    t.destinationAddress.Print (dstAddrOss);");
+  this->WriteCpp("");
+  this->WriteCpp("    NS_LOG_UNCOND(protocolName << \" \" << ipMap[srcAddrOss.str()] << \"/\" << srcAddrOss.str() << \"/\" << t.sourcePort << \" ----> \" << ipMap[dstAddrOss.str()] << \"/\" << dstAddrOss.str() << \"/\" << t.destinationPort);");
+  this->WriteCpp("    NS_LOG_UNCOND(\" \");");
+  this->WriteCpp("");
+  this->WriteCpp("    if ((i->second.timeLastTxPacket - i->second.timeFirstTxPacket) == 0)");
+  this->WriteCpp("      NS_LOG_UNCOND(\"Tx bitrate: 0 kbps\");");
+  this->WriteCpp("    else");
+  this->WriteCpp("      NS_LOG_UNCOND(\"Tx bitrate:\" << (8.0 * i->second.txBytes * 1e-3 * 1e9) / (i->second.timeLastTxPacket - i->second.timeFirstTxPacket) << \" kbps\");");
+  this->WriteCpp("");
+  this->WriteCpp("    if ((i->second.timeLastRxPacket - i->second.timeFirstRxPacket) == 0)");
+  this->WriteCpp("      NS_LOG_UNCOND(\"Rx bitrate: 0 kbps\");");
+  this->WriteCpp("    else");
+  this->WriteCpp("      NS_LOG_UNCOND(\"Rx bitrate:\" << (8.0 * i->second.rxBytes * 1e-3 * 1e9) / (i->second.timeLastRxPacket - i->second.timeFirstRxPacket) << \" kbps\");");
+  this->WriteCpp("");
+  this->WriteCpp("    if (i->second.rxPackets == 0)");
+  this->WriteCpp("      NS_LOG_UNCOND(\"Mean delay: 0 ms\");");
+  this->WriteCpp("    else NS_LOG_UNCOND(\"Mean delay:\" << (1000 * i->second.delaySum.GetSeconds()) / (i->second.rxPackets) << \" ms\");");
+  this->WriteCpp("");
+  this->WriteCpp("    if ((i->second.rxPackets + i->second.lostPackets) == 0)");
+  this->WriteCpp("      NS_LOG_UNCOND(\"Packet Loss ratio: 0%\");");
+  this->WriteCpp("    else NS_LOG_UNCOND(\"Packet Loss ratio: \" << ((i->second.lostPackets * 1.0) / (i->second.rxPackets + i->second.lostPackets) * 1.0) * 100 << \"%\");");
+  this->WriteCpp("");
+  this->WriteCpp("    NS_LOG_UNCOND(\" \");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"First Tx Packet: \" << i->second.timeFirstTxPacket.GetSeconds() << \" secs.\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"First Rx Packet: \" << i->second.timeFirstRxPacket.GetSeconds() << \" secs.\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Last Tx Packet: \" << i->second.timeLastTxPacket.GetSeconds() << \" secs.\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Last Rx Packet: \" << i->second.timeLastRxPacket.GetSeconds() << \" secs.\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Delay Sum: \" << i->second.delaySum.GetSeconds() << \" secs.\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Jitter Sum: \" << i->second.jitterSum.GetSeconds() << \" secs.\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Last Delay: \" << i->second.lastDelay.GetSeconds() << \" secs.\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Tx Bytes: \" << i->second.txBytes);");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Rx Bytes: \" << i->second.rxBytes);");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Tx Packets: \" << i->second.txPackets);");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Rx Packets: \" << i->second.rxPackets);");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Lost Packets: \" << i->second.lostPackets);");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Times Forwarded: \" << i->second.timesForwarded);");
+  this->WriteCpp("");
+  this->WriteCpp("    if ((i->second.timeLastRxPacket - i->second.timeFirstTxPacket) == 0)");
+  this->WriteCpp("      NS_LOG_UNCOND(\"Throughput: 0 Kbps\");");
+  this->WriteCpp("    else NS_LOG_UNCOND(\"Throughput: \" << i->second.rxBytes * 8.0 / (i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds()) / 1024  << \" Kbps\");");
+  this->WriteCpp("");
+  this->WriteCpp("    NS_LOG_UNCOND(\" \");");
+  this->WriteCpp("");
+  this->WriteCpp("    if (!i->second.packetsDropped.empty())");
+  this->WriteCpp("      {");
+  this->WriteCpp("      NS_LOG_UNCOND(\"Packets Dropped:\");");
+  this->WriteCpp("      NS_LOG_UNCOND(\" \");");
+  this->WriteCpp("      }");
+  this->WriteCpp("");
+  this->WriteCpp("    for (uint32_t reasonCode = 0; reasonCode < i->second.packetsDropped.size (); reasonCode++)");
+  this->WriteCpp("    {");
+  this->WriteCpp("      NS_LOG_UNCOND(DroppedNames[reasonCode] << \":\" << i->second.packetsDropped[reasonCode]);");
+  this->WriteCpp("    }");
+  this->WriteCpp("  }");
+  this->WriteCpp(" ");
+  this->WriteCpp(" ");
+  this->WriteCpp("  NS_LOG_UNCOND(\" \");");
+  this->WriteCpp("  NS_LOG_UNCOND(\" \");");
+  this->WriteCpp("  NS_LOG_UNCOND(\"================================================\");");
+  this->WriteCpp("  NS_LOG_UNCOND(\"=================Summary========================\");");
+  this->WriteCpp("  NS_LOG_UNCOND(\"================================================\");");
+  this->WriteCpp("  NS_LOG_UNCOND(\"All Tx Packets: \" << txPacketsum);");
+  this->WriteCpp("  NS_LOG_UNCOND(\"All Rx Packets: \" << rxPacketsum);");
+  this->WriteCpp("  NS_LOG_UNCOND(\"All Delay: \" << Delaysum / txPacketsum);");
+  this->WriteCpp("  NS_LOG_UNCOND(\"All Lost Packets: \" << LostPacketsum);");
+  this->WriteCpp("  NS_LOG_UNCOND(\"All Drop Packets: \" << DropPacketsum);");
+  this->WriteCpp("");
+  this->WriteCpp("  if (txPacketsum != 0)");
+  this->WriteCpp("  {");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Packets Delivery Ratio: \" << ((rxPacketsum * 100) / txPacketsum) << \"%\");");
+  this->WriteCpp("    NS_LOG_UNCOND(\"Packets Lost Ratio: \" << ((LostPacketsum * 100) / txPacketsum) << \"%\");");
+  this->WriteCpp("  }");
+  this->WriteCpp("");
   this->WriteCpp("  Simulator::Destroy ();");
 
   this->WriteCpp("}"); 
@@ -824,11 +1051,12 @@ std::vector<std::string> Generator::GenerateIpStackCpp()
 
   /* construct node without bridge Node. */
   allStack.push_back("InternetStackHelper internetStackH;");
+
   std::string nodeName = "";
   for(size_t i = 0; i <  this->m_listNode.size(); i++)
   {
     nodeName = (this->m_listNode.at(i))->GetNodeName();
-    /* if it is not a bridge you can add it. */
+    // if it is not a bridge you can add it. /
     if(nodeName.find("bridge_") != 0)
     {
       std::vector<std::string> trans = (this->m_listNode.at(i)->GenerateIpStackCpp());
@@ -845,6 +1073,7 @@ std::vector<std::string> Generator::GenerateIpStackCpp()
 std::vector<std::string> Generator::GenerateIpAssignCpp() 
 {
   std::vector<std::string> ipAssign;
+  ipAssign.push_back("std::ostringstream addrOss;");
   ipAssign.push_back("Ipv4AddressHelper ipv4;");
 
   size_t ipRange = 0;
@@ -852,8 +1081,42 @@ std::vector<std::string> Generator::GenerateIpAssignCpp()
   {
     ipAssign.push_back("ipv4.SetBase (\"10.0." + utils::integerToString(ipRange) + ".0\", \"255.255.255.0\");");
     ipAssign.push_back("Ipv4InterfaceContainer iface_" + this->m_listNetworkHardware.at(i)->GetNdcName() + " = ipv4.Assign (" + this->m_listNetworkHardware.at(i)->GetNdcName() + ");");
+
+    if (this->m_listNetworkHardware.at(i)->GetNdcName().find("ndc_ap_") == 0)
+    {
+        ipAssign.push_back("iface_" + this->m_listNetworkHardware.at(i)->GetNdcName() + ".GetAddress(0).Print (addrOss);");
+        ipAssign.push_back("ipMap [addrOss.str()] = Names::FindName (ap_" + this->m_listNetworkHardware.at(i)->GetIndice() + ".Get (0));");
+        ipAssign.push_back("addrOss.str(\"\");");
+        ipAssign.push_back("addrOss.clear();");
+        ipAssign.push_back("///ipv4.Assign (ndc_sta_" + this->m_listNetworkHardware.at(i)->GetIndice() + ");");
+        ipAssign.push_back("Ipv4InterfaceContainer iface_ndc_sta_" + this->m_listNetworkHardware.at(i)->GetIndice() + ";");
+
+        ipAssign.push_back("for (uint32_t i = 0; i < " + this->m_listNetworkHardware.at(i)->GetAllNodeContainer() + ".GetN (); ++i)");
+        ipAssign.push_back("  {");
+        ipAssign.push_back("  iface_ndc_sta_" + this->m_listNetworkHardware.at(i)->GetIndice() + ".Add (ipv4.Assign (ndc_sta_" + this->m_listNetworkHardware.at(i)->GetIndice() + ".Get (i)));");
+        ipAssign.push_back("  iface_ndc_sta_" + this->m_listNetworkHardware.at(i)->GetIndice() + ".GetAddress(i).Print (addrOss);");
+        ipAssign.push_back("  ipMap [addrOss.str()] = Names::FindName (" + this->m_listNetworkHardware.at(i)->GetAllNodeContainer() + ".Get (i));");
+        ipAssign.push_back("  addrOss.str(\"\");");
+        ipAssign.push_back("  addrOss.clear();");
+        ipAssign.push_back("  }");
+    }
+    else
+    {
+        ipAssign.push_back("for (uint32_t i = 0; i < " + this->m_listNetworkHardware.at(i)->GetAllNodeContainer() + ".GetN (); ++i)");
+        ipAssign.push_back("  {");
+        ipAssign.push_back("  iface_" + this->m_listNetworkHardware.at(i)->GetNdcName() + ".GetAddress(i).Print (addrOss);");
+        ipAssign.push_back("  ipMap [addrOss.str()] = Names::FindName (" + this->m_listNetworkHardware.at(i)->GetAllNodeContainer() + ".Get (i));");
+        ipAssign.push_back("  addrOss.str(\"\");");
+        ipAssign.push_back("  addrOss.clear();");
+        ipAssign.push_back("  }");
+    }
+
+std::cerr << "ndc name = " << this->m_listNetworkHardware.at(i)->GetNdcName() << std::endl;
+std::cerr << "Node container name = " << this->m_listNetworkHardware.at(i)->GetAllNodeContainer() << std::endl;
+
     ipRange += 1;
   } 
+
 
   return ipAssign;
 }
@@ -998,490 +1261,14 @@ std::vector<std::string> Generator::GenerateTraceCpp()
 }
 
 //
-// Part around the C++ code Generation.
-// This part is looking about the code to write.
-
-void Generator::GenerateCodePython(std::string fileName)
-{
-  if(fileName != ""){
-    this->m_pyFile.open(fileName.c_str());
-  }
-  
-  //
-  // Generate headers 
-  //
-  this->WritePython("import ns3");
-  this->WritePython("");
-  this->WritePython("def main(argv):");
-  this->WritePython("");
-
-  //
-  // Tap/Emu variables
-  //
-  std::vector<std::string> allVars = GenerateVarsPython();
-  for(size_t i = 0; i <  allVars.size(); i++)
-  {
-    this->WritePython("    " + allVars.at(i));
-    this->WritePython("");
-  }
-
-  //
-  // Generate Command Line 
-  //
-  this->WritePython("    cmd = ns3.CommandLine()");
-
-  std::vector<std::string> allCmdLine = GenerateCmdLinePython();
-  for(size_t i = 0; i <  allCmdLine.size(); i++)
-  {
-    this->WritePython("    " + allCmdLine.at(i));
-  } 
-
-  this->WritePython("    cmd.Parse (argv)");
-
-  //
-  // Generate Optional configuration
-  // 
-  this->WritePython("");
-  this->WritePython("    # Configuration.");
-  std::vector<std::string> conf = GenerateConfigPython();
-  for(size_t i = 0; i <  conf.size(); i++)
-  {
-    this->WritePython("    " + conf.at(i));
-  }
-
-  //
-  // Generate Nodes. 
-  //
-  this->WritePython("");
-  this->WritePython("    # Build nodes");
-  std::vector<std::string> nodeBuild = GenerateNodePython();
-  for(size_t i = 0; i <  nodeBuild.size(); i++)
-  {
-    this->WritePython("    " + nodeBuild.at(i));
-  }
-
-  //
-  // Generate Link.
-  //
-  this->WritePython("");
-  this->WritePython("    # Build link.");
-  std::vector<std::string> linkBuild = GenerateNetworkHardwarePython();
-  for(size_t i = 0; i <  linkBuild.size(); i++)
-  {
-    this->WritePython("    " + linkBuild.at(i));
-  }
-
-  //
-  // Generate link net device container.
-  //
-  this->WritePython("");
-  this->WritePython("    # Build link net device container.");
-  std::vector<std::string> linkNdcBuild = GenerateNetDevicePython(); 
-  for(size_t i = 0; i <  linkNdcBuild.size(); i++)
-  {
-    this->WritePython("    " + linkNdcBuild.at(i));
-  }
-
-  //
-  // Generate IP Stack. 
-  //
-  this->WritePython("");
-  this->WritePython("    # Install the IP stack.");
-  std::vector<std::string> allStacks = GenerateIpStackPython();
-  for(size_t i = 0; i <  allStacks.size(); i++)
-  {
-    this->WritePython("    " + allStacks.at(i));
-  }
-
-  //
-  // Generate IP assignation.
-  // 
-  this->WritePython("");
-  this->WritePython("    # IP assign.");
-  std::vector<std::string> allAssign = GenerateIpAssignPython();
-  for(size_t i = 0; i <  allAssign.size(); i++)
-  {
-    this->WritePython("    " + allAssign.at(i));
-  } 
-
-  //
-  // Generate TapBridge if tap is used.
-  //
-  std::vector<std::string> allTapBridge = GenerateTapBridgePython();
-  if(allTapBridge.size() > 0)
-  {
-    this->WritePython("");
-    this->WritePython("    # Tap Bridge.");
-  }
-  for(size_t i = 0; i <  allTapBridge.size(); i++)
-  {
-    this->WritePython("    " + allTapBridge.at(i));
-  } 
-
-  //
-  // Generate Route.
-  //
-  this->WritePython("");
-  this->WritePython("    # Generate Route.");
-  std::vector<std::string> allRoutes = GenerateRoutePython();
-  for(size_t i = 0; i <  allRoutes.size(); i++)
-  {
-    this->WritePython("    " + allRoutes.at(i));
-  } 
-
-  //
-  // Generate Application.
-  //
-  this->WritePython("");
-  this->WritePython("    # Generate Application.");
-  std::vector<std::string> allApps = GenerateApplicationPython();
-  for(size_t i = 0; i <  allApps.size(); i++)
-  {
-    this->WritePython("    " + allApps.at(i));
-  } 
-
-  //
-  // Others
-  //
-  this->WritePython("");
-  this->WritePython("    # Simulation.");
-
-
-  this->WritePython("    # Pcap output.");
-  std::vector<std::string> allTrace = GenerateTracePython();
-  for(size_t i = 0; i <  allTrace.size(); i++)
-  {
-    this->WritePython("    " + allTrace.at(i));
-  } 
-
-  /* Set stop time. */
-  size_t stopTime = 0;/* default stop time. */
-  for(size_t i = 0; i <  this->m_listApplication.size(); i++)
-  {
-    if( (this->m_listApplication.at(i))->GetEndTimeNumber() > stopTime)
-    {
-      stopTime = (this->m_listApplication.at(i))->GetEndTimeNumber();
-    }
-  }
-  stopTime += 1;
-
-  this->WritePython("    # Stop the simulation after x seconds.");
-  this->WritePython("    stopTime = "+ utils::integerToString(stopTime) ); 
-  this->WritePython("    ns3.Simulator.Stop (ns3.Seconds(stopTime))");
-
-  this->WritePython("    # Start and clean simulation.");
-  this->WritePython("    ns3.Simulator.Run()");
-  this->WritePython("    ns3.Simulator.Destroy()");
-
-  this->WritePython("");
-  this->WritePython("if __name__ == '__main__':");
-  this->WritePython("    import sys");
-  this->WritePython("    main(sys.argv)");
-  
-  if(fileName != ""){
-    this->m_pyFile.close();
-  }
-}
-
-
-std::vector<std::string> Generator::GenerateVarsPython()
-{
-  std::vector<std::string> ret;
-  return ret;
-}
-
-std::vector<std::string> Generator::GenerateCmdLinePython()
-{
-  std::vector<std::string> allCmdLine;
-
-  for(size_t i = 0; i <  this->m_listNetworkHardware.size(); i++)
-  {
-    std::vector<std::string> trans = (this->m_listNetworkHardware.at(i))->GenerateCmdLinePython();
-    for(size_t j = 0; j <  trans.size(); j++)
-    {
-      allCmdLine.push_back(trans.at(j));
-    }
-  }
-  return allCmdLine;
-}
-
-std::vector<std::string> Generator::GenerateConfigPython()
-{
-  for(size_t i = 0; i <  this->m_listNode.size(); i++)
-  {
-    if( ((this->m_listNode.at(i))->GetNodeName()).find("tap_") == 0)
-    {
-      this->AddConfig("ns3.GlobalValue.Bind (\"SimulatorImplementationType\", ns3.StringValue (\"ns3::RealtimeSimulatorImpl\"));");
-      this->AddConfig("ns3.GlobalValue.Bind (\"ChecksumEnabled\", ns3.BooleanValue (true));");
-    }
-  }
-
-  for(size_t i = 0; i <  this->m_listNetworkHardware.size(); i++)
-  {
-    if( ((this->m_listNetworkHardware.at(i))->GetNetworkHardwareName()).find("emu_") == 0 )
-    {
-      this->AddConfig("ns3.GlobalValue.Bind (\"SimulatorImplementationType\", ns3.StringValue (\"ns3::RealtimeSimulatorImpl\"));");
-      this->AddConfig("ns3.GlobalValue.Bind (\"ChecksumEnabled\", ns3.BooleanValue (true));");
-    }
-  }
-
-  std::vector<std::string> allConf;
-  for(size_t i = 0; i <  this->m_listConfiguration.size(); i++)
-  {
-    allConf.push_back(this->m_listConfiguration.at(i));
-  }
-
-  return allConf;
-}
-
-std::vector<std::string> Generator::GenerateNodePython()
-{
-  std::vector<std::string> allNodes;
-  /* get all the node code. */
-  for(size_t i = 0; i <  this->m_listNode.size(); i++)
-  {
-    std::vector<std::string> trans = (this->m_listNode.at(i))->GenerateNodePython();
-    for(size_t j = 0; j <  trans.size(); j++)
-    {
-      allNodes.push_back(trans.at(j));
-    }
-  }
-  return allNodes;
-}
-
-std::vector<std::string> Generator::GenerateNetworkHardwarePython()
-{
-  std::vector<std::string> allLink;
-  /* get all the link build code. */
-  for(size_t i = 0; i <  this->m_listNetworkHardware.size(); i++)
-  {
-    std::vector<std::string> trans = (this->m_listNetworkHardware.at(i))->GenerateNetworkHardwarePython();
-    for(size_t j = 0; j <  trans.size(); j++)
-    {
-      allLink.push_back(trans.at(j));
-    }
-  }
-  return allLink;
-}
-
-std::vector<std::string> Generator::GenerateNetDevicePython()
-{
-  std::vector<std::string> allNdc;
-  /* get all the link build code. */
-  for(size_t i = 0; i <  this->m_listNetworkHardware.size(); i++)
-  {
-    std::vector<std::string> trans = (this->m_listNetworkHardware.at(i))->GenerateNetDevicePython();
-    for(size_t j = 0; j <  trans.size(); j++)
-    {
-      allNdc.push_back(trans.at(j));
-    }
-  }
-  return allNdc;
-}
-
-std::vector<std::string> Generator::GenerateIpStackPython()
-{
-  std::vector<std::string> allStack;
-
-  /* construct node without bridge Node. */
-  allStack.push_back("internetStackH = ns3.InternetStackHelper()");
-  std::string nodeName = "";
-  for(size_t i = 0; i <  this->m_listNode.size(); i++)
-  {
-    nodeName = (this->m_listNode.at(i))->GetNodeName();
-    /* if it is not a bridge you can add it. */
-    if(nodeName.find("bridge_") != 0)
-    {
-      std::vector<std::string> trans = (this->m_listNode.at(i)->GenerateIpStackPython());
-      for(size_t j = 0; j <  trans.size(); j++)
-      {
-        allStack.push_back(trans.at(j));
-      }
-    }
-  }
-
-  return allStack;
-}
-
-std::vector<std::string> Generator::GenerateIpAssignPython()
-{
-  std::vector<std::string> ipAssign;
-  ipAssign.push_back("ipv4 = ns3.Ipv4AddressHelper()");
-
-  size_t ipRange = 0;
-  for(size_t i = 0; i <  this->m_listNetworkHardware.size(); i++)
-  {
-    ipAssign.push_back("ipv4.SetBase (ns3.Ipv4Address(\"10.0." + utils::integerToString(ipRange) + ".0\"), ns3.Ipv4Mask(\"255.255.255.0\"))");
-    ipAssign.push_back("iface_" + this->m_listNetworkHardware.at(i)->GetNdcName() + " = ipv4.Assign (" + this->m_listNetworkHardware.at(i)->GetNdcName() + ")");
-    ipRange += 1;
-  }
-
-  return ipAssign;
-}
-
-std::vector<std::string> Generator::GenerateTapBridgePython()
-{
-  std::vector<std::string> allTapBridge;
-
-  for(size_t i = 0; i <  this->m_listNetworkHardware.size(); i++)
-  {
-    std::vector<std::string> trans = (this->m_listNetworkHardware.at(i))->GenerateTapBridgePython();
-    for(size_t j = 0; j <  trans.size(); j++)
-    {
-      allTapBridge.push_back(trans.at(j));
-    }
-  }
-
-  return allTapBridge;
-}
-
-std::vector<std::string> Generator::GenerateRoutePython()
-{
-  std::vector<std::string> allRoutes;
-
-  allRoutes.push_back("ns3.Ipv4GlobalRoutingHelper.PopulateRoutingTables ()");
-
-  return allRoutes;
-}
-
-std::vector<std::string> Generator::GenerateApplicationPython()
-{
-  size_t nodeNumber = 0;
-  std::string ndcName = "";
-  size_t linkNumber = 0;
-  std::vector<std::string> allApps;
-  
-  /* get all the ip assign code. */
-  for(size_t i = 0; i <  this->m_listApplication.size(); i++)
-  {
-    /* get NetDeviceContainer and number from the receiver. */
-    std::string receiverName = this->m_listApplication.at(i)->GetReceiverNode();
-    nodeNumber = 0;
-    ndcName = "";
-    linkNumber = 0;
-
-    /* if the receiver is in NodeContainer */
-    if(receiverName.find("NodeContainer(") == 0)
-    {
-      std::string oldReceiverName = receiverName;
-      
-      std::vector<std::string> tab_name;
-      split(tab_name, receiverName, '(');
-      
-      std::string str_get = tab_name.at(1);
-      std::vector<std::string> tab_name2;
-      split(tab_name2, str_get, '.');
-      
-      receiverName = tab_name2.at(0);
-      for(size_t x = 0;  x < this->m_listNetworkHardware.size(); x++)
-      {
-        nodeNumber = 0;
-        for(size_t y = 0; y < this->m_listNetworkHardware.at(x)->GetInstalledNodes().size(); y++)
-        {
-          if(this->m_listNetworkHardware.at(x)->GetInstalledNodes().at(y) == receiverName || this->m_listNetworkHardware.at(x)->GetInstalledNodes().at(y) == oldReceiverName)
-          {
-            ndcName = (this->m_listNetworkHardware.at(x))->GetNdcName();
-            linkNumber = x;
-            break;
-          }
-          if(ndcName != "")
-          {
-            break;
-          }
-        }
-      }
-      std::vector<std::string> linksNode = this->m_listNetworkHardware.at(linkNumber)->GetInstalledNodes();
-      for(size_t j = 0; j < linksNode.size(); j++)
-      {
-        if(linksNode.at(j) == oldReceiverName)
-        {
-          nodeNumber = j;
-          break;
-        }
-      }
-    }
-    else
-    {
-      for(size_t j = 0; j <  this->m_listNetworkHardware.size(); j++)
-      {
-        nodeNumber = 0;
-        linkNumber = 0;
-        std::vector<std::string> nodes = (this->m_listNetworkHardware.at(j))->GetInstalledNodes();
-        for(size_t k = 0; k <  nodes.size(); k++)
-        {
-          if( nodes.at(k) == receiverName)
-          {
-            ndcName = (this->m_listNetworkHardware.at(j))->GetNdcName();
-            break;
-          }
-          else
-          {
-            for(size_t l = 0; l <  this->m_listNode.size(); l++)
-            {
-              if(this->m_listNode.at(l)->GetNodeName() == nodes.at(k))
-              {
-                nodeNumber += this->m_listNode.at(l)->GetMachinesNumber();
-                break;
-              }
-            }
-          }
-        }
-        if(ndcName != "")
-        {
-          break;
-        }
-      }
-    }
-    /* get the application code with param. */
-    std::vector<std::string> trans = (this->m_listApplication.at(i)->GenerateApplicationPython(ndcName, nodeNumber));
-    for(size_t j = 0; j <  trans.size(); j++)
-    {
-      allApps.push_back(trans.at(j));
-    }
-  }
-
-  return allApps;
-}
-
-std::vector<std::string> Generator::GenerateTracePython()
-{
-  std::vector<std::string> allTrace;
-
-  for(size_t i = 0; i <  this->m_listNetworkHardware.size(); i++)
-  {
-    std::vector<std::string> trans = (this->m_listNetworkHardware.at(i))->GenerateTracePython();
-    for(size_t j = 0; j <  trans.size(); j++)
-    {
-      allTrace.push_back(trans.at(j));
-    }
-  }
-
-  return allTrace;
-}
-
-//
 // Cpp generation operation part.
 //
 
 void Generator::WriteCpp(const std::string &line) 
 {
-  std::cout << line << std::endl;
+//std::cout << line << std::endl;
   if(this->m_cppFile.is_open())
   {
     this->m_cppFile << line + '\n';
   }
 }
-
-//
-// Python generation operation part.
-//
-
-void Generator::WritePython(const std::string &line)
-{
-  std::cout << line << std::endl;
-  if(this->m_pyFile.is_open())
-  {
-    this->m_pyFile << line + '\n';
-  }
-}
-

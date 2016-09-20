@@ -30,11 +30,11 @@
 
 #include "utils.h"
 
-Node::Node(const size_t &indice, const std::string &type, const std::string &namePrefix, const size_t &machinesNumber)
+Node::Node(const size_t &indice, const std::string &type, const std::string &nodeName, const size_t &machinesNumber)
 {
   this->m_indice = indice;
   this->m_type = type;
-  this->m_nodeName = std::string(namePrefix + utils::integerToString(indice));
+  this->m_nodeName = nodeName;
   this->m_ipInterfaceName = std::string("iface_" + this->m_nodeName);
   this->m_nsc = std::string("");	
   this->m_machinesNumber = machinesNumber;
@@ -102,7 +102,7 @@ void Node::SetMachinesNumber(const size_t machinesNumber)
 std::vector<std::string> Node::GenerateHeader()
 {
   std::vector<std::string> headers;
-  headers.push_back("#include \"ns3/helper-module.h\"");
+  headers.push_back("#include \"ns3/network-module.h\"");
 
   return headers; 
 }
@@ -110,8 +110,11 @@ std::vector<std::string> Node::GenerateHeader()
 std::vector<std::string> Node::GenerateNodeCpp()
 {
   std::vector<std::string> nodes;
+
+  nodes.push_back("");
   nodes.push_back("NodeContainer " + this->m_nodeName + ";");
   nodes.push_back(this->m_nodeName + ".Create (" + utils::integerToString(this->m_machinesNumber) + ");");
+  nodes.push_back("Names::Add (\"" + this->m_nodeName + "\", " + this->m_nodeName + ".Get (0));");
 
   return nodes; 
 }
@@ -129,30 +132,7 @@ std::vector<std::string> Node::GenerateIpStackCpp()
   return stack; 
 }
 
-std::vector<std::string> Node::GenerateNodePython()
-{
-  std::vector<std::string> nodes;
-  
-  nodes.push_back(this->m_nodeName + " = ns3.NodeContainer()");
-  nodes.push_back(this->m_nodeName + ".Create (" + utils::integerToString(this->m_machinesNumber) + ")");
-  return nodes; 
-}
-
-std::vector<std::string> Node::GenerateIpStackPython()
-{
-  std::vector<std::string> stack;
-  
-  if(this->m_nsc != "")
-  {
-    stack.push_back("internetStackH.SetTcp (\"ns3::NscTcpL4Protocol\",\"Library\",StringValue(nscStack))");
-  }
-  stack.push_back("internetStackH.Install (" + this->m_nodeName + ")");
-
-  return stack; 
-}
-
 std::string Node::GetNodeType()
 {
   return this->m_type;
 }
-

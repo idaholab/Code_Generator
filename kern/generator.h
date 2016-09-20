@@ -88,14 +88,14 @@ class Generator
      * 
      * \param type node type. (pc, hub, switch,...)
      */
-    void AddNode(const std::string &type);
+    void AddNode(const std::string &type, const std::string &nodeName);
 
     /**
      * \brief Add an node group.
      * \param type node type
      * \param number number which will be added
      */
-    void AddNode(const std::string &type, const size_t number);
+    void AddNode(const std::string &type, const std::string &nodeName, const size_t number);
 
     /**
      * \brief Remove an node element.
@@ -150,6 +150,20 @@ class Generator
      * \param endTime end time
      */
     void AddApplication(const std::string &type, const std::string &senderNode, const std::string &receiverNode, const size_t &startTime, const size_t &endTime);
+
+    /**
+     * \brief Add an application.
+     * 
+     * This procedure is used to add an procedure. It add the application to the
+     * vector listApplication and increment the number of application.
+     * 
+     * \param type the type of the application. (meter data management)
+     * \param senderNode sender node
+     * \param receiverNode receiver node
+     * \param startTime start time
+     * \param endTime end time
+     */
+    void AddApplication(const std::string &type, const std::string &senderNode, const std::string &receiverNode, const size_t &startTime, const size_t &endTime, const size_t &interval, const size_t &readingTime);
 
     /**
      * \brief Remove an application element.
@@ -238,7 +252,7 @@ class Generator
      * This procedure is the main procedure to generate the code from the simulation.
      * It also go to use all the procedure on the bottom like generate all headers, ...
      */
-    void GenerateCodePython(std::string fileName = "");
+///    void GenerateCodePython(std::string fileName = "");
 
   private:
     /**
@@ -321,6 +335,31 @@ class Generator
      * \brief Number attribute of udp echo application created.
      */
     size_t m_indiceApplicationUdpEcho;
+
+    /**
+     * \brief Number attribute of udp application created.
+     */
+    size_t m_indiceApplicationUdp;
+
+    /**
+     * \brief Number attribute of udp cosem application created.
+     */
+    size_t m_indiceApplicationUdpCosem;
+
+    /**
+     * \brief Number attribute of data concentrator application created.
+     */
+    size_t m_indiceApplicationDataConcentrator;
+
+    /**
+     * \brief Number attribute of meter data management application created.
+     */
+    size_t m_indiceApplicationMeterDataManagement;
+
+    /**
+     * \brief Number attribute of demand response application created.
+     */
+    size_t m_indiceApplicationDemandResponse;
 
     /**
      * \brief Number attribute of ap link created.
@@ -440,85 +479,6 @@ class Generator
     std::vector<std::string> GenerateTraceCpp();
 
     //
-    // Python code generation operation part
-    //
-
-    /**
-     * \brief Generate vars python code.
-     * 
-     * This function return a string wich contain all python vars.
-     * 
-     * \return vars code
-     */
-    std::vector<std::string> GenerateVarsPython();
-
-    /**
-     * \brief Generate command line python code.
-     * \return commend line code
-     */
-    std::vector<std::string> GenerateCmdLinePython();
-
-    /**
-     * \brief Generate config python code.
-     * \return config code
-     */
-    std::vector<std::string> GenerateConfigPython();
-
-    /**
-     * \brief Generate node declaration python code.
-     * \return declaration code
-     */
-    std::vector<std::string> GenerateNodePython();
-
-    /**
-     * \brief Generate link python code.
-     * \return link code
-     */
-    std::vector<std::string> GenerateNetworkHardwarePython();
-
-    /**
-     * \brief Generate net device python code.
-     * \return net device code
-     */
-    std::vector<std::string> GenerateNetDevicePython();
-
-    /**
-     * \brief Generate ip stack declaration.
-     * \return IP stack code
-     */
-    std::vector<std::string> GenerateIpStackPython();
-
-    /**
-     * \brief Generate ip assign python code.
-     * \return IP assign code
-     */
-    std::vector<std::string> GenerateIpAssignPython();
-
-    /**
-     * \brief Generate tap bridge python code.
-     * \return tab bridge code
-     */
-    std::vector<std::string> GenerateTapBridgePython();
-
-    /**
-     * \brief Generate route python code.
-     * \return route code
-     */
-    std::vector<std::string> GenerateRoutePython();
-
-    /**
-     * \brief Generate application python code.
-     * \return application code
-     */
-    std::vector<std::string> GenerateApplicationPython();
-
-    /**
-     * \brief Generate trace python code.
-     * \return trace code
-     */
-    std::vector<std::string> GenerateTracePython();
-
-    //
     // C++ generation operation part.
     //
 
@@ -533,21 +493,6 @@ class Generator
      */
     void WriteCpp(const std::string &line);
 
-    //
-    // Python generation operation part.
-    //
-
-    /**
-     * \brief Name of the python output file name.
-     */
-    std::ofstream m_pyFile;
-
-    /**
-     * \brief Write python code into the output file name.
-     * \param line the line to be writted 
-     */
-    void WritePython(const std::string &line);
 };
 
 #endif /* GENERATOR_H */
-

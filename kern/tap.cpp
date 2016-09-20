@@ -98,7 +98,8 @@ std::vector<std::string> Tap::GenerateHeader()
 {
   std::vector<std::string> headers;
   headers.push_back("#include \"ns3/bridge-module.h\"");
-  headers.push_back("#include \"ns3/helper-module.h\"");
+  headers.push_back("#include \"ns3/csma-module.h\"");
+  headers.push_back("#include \"ns3/tap-bridge-module.h\"");
 
   return headers;
 }
@@ -106,6 +107,8 @@ std::vector<std::string> Tap::GenerateHeader()
 std::vector<std::string> Tap::GenerateNetworkHardwareCpp()
 {
   std::vector<std::string> generatedLink;
+
+  generatedLink.push_back("");
   generatedLink.push_back("CsmaHelper csma_" + this->GetNetworkHardwareName() + ";");
   generatedLink.push_back("csma_" + this->GetNetworkHardwareName() + ".SetChannelAttribute (\"DataRate\", DataRateValue (" + this->GetDataRate() + "));");
   generatedLink.push_back("csma_" + this->GetNetworkHardwareName() + ".SetChannelAttribute (\"Delay\", TimeValue (MilliSeconds (" + this->GetNetworkHardwareDelay() + ")));");
@@ -120,56 +123,3 @@ std::vector<std::string> Tap::GenerateCmdLineCpp()
   cmdLine.push_back("cmd.AddValue (\"tapName_" + this->GetNetworkHardwareName() + "\", \"Name of the OS tap device\", tapName_" + this->GetNetworkHardwareName() + ");");
   return cmdLine;
 }
-
-std::vector<std::string> Tap::GenerateVarsPython()
-{
-  std::vector<std::string> vars;
-  vars.push_back("mode_" + this->GetNetworkHardwareName() + " = \"ConfigureLocal\"");
-  vars.push_back("tapName_" + this->GetNetworkHardwareName() + " = \"" + this->m_ifaceName + "\"");
-  return vars;
-}
-
-std::vector<std::string> Tap::GenerateCmdLinePython()
-{
-  std::vector<std::string> cmdLine;
-  cmdLine.push_back("cmd.AddValue(\"mode_" + this->GetNetworkHardwareName() + "\", \"Mode Setting of TapBridge\", mode_" + this->GetNetworkHardwareName() + ")");
-  cmdLine.push_back("cmd.AddValue(\"tapName_" + this->GetNetworkHardwareName() + "\", \"Name of the OS tap device\", tapName_" + this->GetNetworkHardwareName() + ")");
-  return cmdLine;
-}
-
-std::vector<std::string> Tap::GenerateNetworkHardwarePython()
-{
-  std::vector<std::string> generatedLink;
-  generatedLink.push_back("csma_" + this->GetNetworkHardwareName() + " = ns3.CsmaHelper()");
-  generatedLink.push_back("csma_" + this->GetNetworkHardwareName() + ".SetChannelAttribute(\"DataRate\", ns3.DataRateValue(ns3.DataRate(" + this->GetDataRate() + ")));");
-  generatedLink.push_back("csma_" + this->GetNetworkHardwareName() + ".SetChannelAttribute(\"Delay\", ns3.TimeValue(ns3.MilliSeconds(" + this->GetNetworkHardwareDelay() + ")));");
-
-  return generatedLink;
-}
-
-std::vector<std::string> Tap::GenerateNetDevicePython()
-{
-  std::vector<std::string> ndc;
-  std::vector<std::string> allNodes = this->GroupAsNodeContainerCpp();
-  
-  for(size_t i = 0; i <  allNodes.size(); i++)
-  {
-    ndc.push_back(allNodes.at(i));
-  }
-  ndc.push_back(this->GetNdcName() + " = csma_" + this->GetNetworkHardwareName() + ".Install(" + this->GetAllNodeContainer() + ");");
-
-  return ndc;
-}
-
-std::vector<std::string> Tap::GenerateTapBridgePython()
-{ 
-  std::vector<std::string> tapBridge;
-  
-  tapBridge.push_back("tapBridge_" + this->GetNetworkHardwareName() + " = ns3.TapBridgeHelper(iface_" + this->GetNdcName() + ".GetAddress(1))");
-  tapBridge.push_back("tapBridge_" + this->GetNetworkHardwareName() + ".SetAttribute(\"Mode\", ns3.StringValue (mode_" + this->GetNetworkHardwareName() + "))");
-  tapBridge.push_back("tapBridge_" + this->GetNetworkHardwareName() + ".SetAttribute(\"DeviceName\", ns3.StringValue (tapName_" + this->GetNetworkHardwareName() + "))");
-  tapBridge.push_back("tapBridge_" + this->GetNetworkHardwareName() + ".Install(" + this->m_tapNode + ".Get(0), " + this->GetNdcName() + ".Get(0))");
-  
-  return tapBridge;
-} 
-

@@ -42,6 +42,7 @@ std::vector<std::string> PointToPoint::GenerateHeader()
 {
   std::vector<std::string> headers;
   headers.push_back("#include \"ns3/bridge-module.h\"");
+  headers.push_back("#include \"ns3/point-to-point-module.h\"");
 
   return headers;
 }
@@ -49,6 +50,8 @@ std::vector<std::string> PointToPoint::GenerateHeader()
 std::vector<std::string> PointToPoint::GenerateNetworkHardwareCpp()
 {
   std::vector<std::string> generatedLink;
+
+  generatedLink.push_back("");
   generatedLink.push_back("PointToPointHelper p2p_" + this->GetNetworkHardwareName() + ";");
   generatedLink.push_back("p2p_" + this->GetNetworkHardwareName() + ".SetDeviceAttribute (\"DataRate\", DataRateValue (" + this->GetDataRate() + "));");
   generatedLink.push_back("p2p_" + this->GetNetworkHardwareName() + ".SetChannelAttribute (\"Delay\", TimeValue (MilliSeconds (" + this->GetNetworkHardwareDelay() + ")));");
@@ -75,46 +78,8 @@ std::vector<std::string> PointToPoint::GenerateTraceCpp()
 
   if(this->GetTrace())
   {
-    trace.push_back("PointToPointHelper::EnablePcapAll (\"" + this->GetNetworkHardwareName() + "\");");
+    trace.push_back("p2p_" + this->GetNetworkHardwareName() + ".EnablePcapAll (\"" + this->GetNetworkHardwareName() + "\");");
   }
 
   return trace;
 }
-
-std::vector<std::string> PointToPoint::GenerateNetworkHardwarePython()
-{
-  std::vector<std::string> generatedLink;
-  
-  generatedLink.push_back("p2p_" + this->GetNetworkHardwareName() + " = ns3.PointToPointHelper()");
-  generatedLink.push_back("p2p_" + this->GetNetworkHardwareName() + ".SetDeviceAttribute(\"DataRate\", ns3.DataRateValue(ns3.DataRate(" + this->GetDataRate() + ")))");
-  generatedLink.push_back("p2p_" + this->GetNetworkHardwareName() + ".SetChannelAttribute(\"Delay\", ns3.TimeValue(ns3.MilliSeconds(" + this->GetNetworkHardwareDelay() + ")))");
-  return generatedLink;
-}
-
-std::vector<std::string> PointToPoint::GenerateNetDevicePython()
-{
-  std::vector<std::string> ndc;
-  std::vector<std::string> allNodes = this->GroupAsNodeContainerPython();
-  
-  for(size_t i = 0; i <  allNodes.size(); i++)
-  {
-    ndc.push_back(allNodes.at(i));
-  }
-  
-  ndc.push_back(this->GetNdcName() + " = p2p_" + this->GetNetworkHardwareName() + ".Install(" + this->GetAllNodeContainer() + ")");
-
-  return ndc;
-}
-
-std::vector<std::string> PointToPoint::GenerateTracePython()
-{
-  std::vector<std::string> trace;
-  
-  if(this->GetTrace())
-  {
-    trace.push_back("PointToPointHelper.EnablePcapAll(\"" + this->GetNetworkHardwareName() + "\")");
-  }
-  
-  return trace;
-}
-

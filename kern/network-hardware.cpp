@@ -35,8 +35,8 @@ NetworkHardware::NetworkHardware(const std::string &type, const size_t &indice)
 {
   this->m_type = type;
   this->m_indice = indice;
-  this->m_dataRate = std::string("100000000"); /* 100 Mbps */
-  this->m_networkHardwareDelay = std::string("10000"); /* 10 ms */
+  this->m_dataRate = std::string("5000000"); /* 5 Mbps */
+  this->m_networkHardwareDelay = std::string("2000"); /* 2 ms */
 
   this->m_enableTrace = false;
   this->m_tracePromisc = false;
@@ -155,30 +155,19 @@ void NetworkHardware::SetAllNodeContainer(const std::string &allNodeContainer)
 std::vector<std::string> NetworkHardware::GroupAsNodeContainerCpp()
 {
   std::vector<std::string> res;
+
   res.push_back("NodeContainer " + this->m_allNodeContainer + ";");
+
   for(size_t i = 0; i <  this->m_nodes.size(); i++)
-  {
-    if((this->m_nodes.at(i)).find("ap_") != 0)
-    {
+     {
+      if((this->m_nodes.at(i).find("ap_") == 0) && (this->m_allNodeContainer.find("all_ap_") == 0))
+      ;
+      else
+      {
       res.push_back(this->m_allNodeContainer + ".Add (" + this->m_nodes.at(i) + ");");
-    }
-  }
+      }
+     }
 
-  return res;
-}
-
-std::vector<std::string> NetworkHardware::GroupAsNodeContainerPython()
-{
-  std::vector<std::string> res;
-
-  res.push_back(this->m_allNodeContainer + " = ns3.NodeContainer()");
-  for(size_t i = 0; i <  this->m_nodes.size(); i++)
-  {
-    if((this->m_nodes.at(i)).find("ap_") != 0)
-    {
-      res.push_back(this->m_allNodeContainer + ".Add (" + this->m_nodes.at(i) + ")");
-    }
-  }
   return res;
 }
 
@@ -227,32 +216,7 @@ std::vector<std::string> NetworkHardware::GenerateTraceCpp()
 }
 
 /* XXX to move elsewhere */
-std::vector<std::string> NetworkHardware::GenerateTapBridgePython()
-{
-  std::vector<std::string> res;
-  return res;
-}
-
-std::vector<std::string> NetworkHardware::GenerateVarsPython()
-{
-  std::vector<std::string> res;
-  return res;
-}
-
-std::vector<std::string> NetworkHardware::GenerateCmdLinePython()
-{
-  std::vector<std::string> res;
-  return res;
-}
-
-std::vector<std::string> NetworkHardware::GenerateTracePython()
-{
-  std::vector<std::string> res;
-  return res;
-}
-
 std::string NetworkHardware::GetLinkType()
 {
   return this->m_type;
 }
-

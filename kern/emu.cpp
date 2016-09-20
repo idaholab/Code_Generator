@@ -65,7 +65,7 @@ std::vector<std::string> Emu::GenerateHeader()
 {
   std::vector<std::string> headers;
   headers.push_back("#include \"ns3/bridge-module.h\"");
-  headers.push_back("#include \"ns3/emu-helper.h\"");
+  headers.push_back("#include \"ns3/emu-module.h\"");
 
   return headers;
 }
@@ -124,59 +124,3 @@ std::vector<std::string> Emu::GenerateTraceCpp()
 
   return trace;
 }
-
-std::vector<std::string> Emu::GenerateNetworkHardwarePython()
-{
-  std::vector<std::string> generatedLink;
-  generatedLink.push_back(this->GetNetworkHardwareName() + " = ns3.EmuHelper()");
-  generatedLink.push_back(this->GetNetworkHardwareName() + ".SetAttribute (\"DeviceName\", StringValue (emuDevice_" + this->GetNetworkHardwareName() + "))");
-
-  return generatedLink;
-}
-
-std::vector<std::string> Emu::GenerateNetDevicePython()
-{
-  std::vector<std::string> ndc;
-  std::vector<std::string> allNodes = this->GroupAsNodeContainerPython();
-  for(size_t i = 0; i <  allNodes.size(); i++)
-  {
-    ndc.push_back(allNodes.at(i));
-  }
-  ndc.push_back(this->GetNdcName() + " = " + this->GetNetworkHardwareName() + ".Install (" + this->GetAllNodeContainer() + ")");
-
-  return ndc;
-}
-
-std::vector<std::string> Emu::GenerateVarsPython()
-{
-  std::vector<std::string> vars;
-  vars.push_back("emuDevice_" + this->GetNetworkHardwareName() + " = \"" + this->m_ifaceName + "\"");
-  return vars;
-}
-
-std::vector<std::string> Emu::GenerateCmdLinePython()
-{
-  std::vector<std::string> cmdLine;
-  cmdLine.push_back("cmd.AddValue(\"deviceName_" + this->GetNetworkHardwareName() + "\", \"device name\", emuDevice_" + this->GetNetworkHardwareName() + ")");
-  return cmdLine;
-}
-
-std::vector<std::string> Emu::GenerateTracePython()
-{
-  std::vector<std::string> trace;
-
-  if(this->GetTrace())
-  {
-    if(this->GetPromisc())
-    {
-      trace.push_back("EmuHelper::EnablePcap (\"Emu-" + this->GetNetworkHardwareName() + "\",\"" + this->m_ifaceName + "\", true)");
-    }
-    else
-    {
-      trace.push_back("EmuHelper::EnablePcap (\"Emu-" + this->GetNetworkHardwareName() + "\",\"" + this->m_ifaceName + "\", false)");
-    }
-  }
-
-  return trace;
-}
-

@@ -87,24 +87,6 @@ class Hub : public NetworkHardware
      */
     virtual std::vector<std::string> GenerateTraceCpp();
     
-    /**
-     * \brief Generate link python code.
-     * \return link code
-     */
-    virtual std::vector<std::string> GenerateNetworkHardwarePython();
-
-    /**
-     * \brief Generate net device container python code.
-     * \return net device container code
-     */
-    virtual std::vector<std::string> GenerateNetDevicePython();
-
-    /**
-     * \brief Generate trace line python code.
-     * \return trace line code
-     */
-    virtual std::vector<std::string> GenerateTracePython();
 };
 
 #endif /* HUB_H */
-

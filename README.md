@@ -1,10 +1,11 @@
 The ns-3 code generator
 ===========================
 
-The ns-3 code generator project aims to provide a quick and easy way to generate valid ns-3 C++ simulation scripts.
-It incorporates the CodeSynthesis XSD product to validate and generate the XML to C++ data bindings to allow for
-easier parsing of the XML file used to define a network topology.  The code generator can be invoked stand alone
-from the command line, or integrated into a larger system that requires ns-3 code generation capability.
+The ns-3 code generator project aims to provide a quick and easy way to automatically generate valid ns-3 C++
+simulation scripts. It incorporates the CodeSynthesis XSD product to validate and generate the XML to C++ data
+bindings to allow for easier parsing of the XML file used to define a network topology.  The code generator can
+be invoked stand alone from the command line, or integrated into a larger system that requires ns-3 code
+generation capability.
 
 1) Build / install
 ------------------

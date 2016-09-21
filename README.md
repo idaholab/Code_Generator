@@ -65,6 +65,7 @@ License
 ------------------
 
   Copyright (c) 2016 Idaho National Laboratory
+  
   Copyright (c) 2009 University of Strasbourg
   
   This program is free software; you can redistribute it and/or

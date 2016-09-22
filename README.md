@@ -61,6 +61,17 @@ $ make docs
 
 The HTML generated documentation is located in the same directory.
 
+3) ns-3
+--------------
+
+The *output_filename* file that is generated can then be executed in the ns-3 simulation environment.  See ns-3
+documentation for how to run an ns-3 script.
+
+Note - If you generate an ns-3 script with any of the COSEM applications, your ns-3 install will need to
+include those helper/models.  The DLMS/COSEM repository can be found at;
+
+https://github.com/joaopedrotaveira/dlms-cosem-ns-3
+
 License
 ------------------
 

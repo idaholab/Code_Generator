@@ -27,8 +27,11 @@ Then simply issue:
 Issuing the make command will generate the following files;
 
 TopologySchema.hxx
+
 TopologySchema.ixx
+
 TopologySchema.cxx
+
   C++ types that represent the given vocabulary, a set of parsing
   functions that convert XML documents to a tree-like in-memory object
   model, and a set of serialization functions that convert the object
@@ -37,6 +40,7 @@ TopologySchema.cxx
 Other files;
 
 ns-3-codegenerator.cxx
+
   Is the main program for the project. It first calls one of the parsing functions
   that constructs the object model from the input file. It then makes the API
   calls to generate the ns-3 compliant code.

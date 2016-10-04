@@ -116,7 +116,7 @@ std::vector<std::string> Ap::GenerateNetDeviceCpp()
   ndc.push_back("Ssid ssid_" + this->GetNetworkHardwareName() + " = Ssid (\"" + this->m_apName + "\");");
 
   ndc.push_back("");
-  ndc.push_back("WifiHelper wifi_" + this->GetNetworkHardwareName() + " = WifiHelper::Default ();");
+  ndc.push_back("WifiHelper wifi_" + this->GetNetworkHardwareName() + " = WifiHelper ();");
 
   ndc.push_back("");
   ndc.push_back("NqosWifiMacHelper wifiMac_" + this->GetNetworkHardwareName() + " = NqosWifiMacHelper::Default ();");

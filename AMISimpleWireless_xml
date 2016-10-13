@@ -4,54 +4,67 @@
         <node>
             <type>Station</type>
             <name>station_0</name>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_1</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_2</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_3</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_4</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_5</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_6</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_7</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_8</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>AccessPoint</type>
             <name>ap_0</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Pc</type>
             <name>term_0</name>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Pc</type>
             <name>term_1</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
         <node>
             <type>Pc</type>
             <name>term_2</name>
+            <enableFlowmonitor>false</enableFlowmonitor>
         </node>
     </Nodes>
     <NetworkHardwares>

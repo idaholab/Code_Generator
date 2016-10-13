@@ -38,6 +38,7 @@ Node::Node(const size_t &indice, const std::string &type, const std::string &nod
   this->m_ipInterfaceName = std::string("iface_" + this->m_nodeName);
   this->m_nsc = std::string("");	
   this->m_machinesNumber = machinesNumber;
+  this->m_enableFlowmonitor = false;
 }
 
 Node::~Node()
@@ -130,6 +131,28 @@ std::vector<std::string> Node::GenerateIpStackCpp()
   stack.push_back("internetStackH.Install (" + this->m_nodeName + ");");
 
   return stack; 
+}
+
+std::vector<std::string> Node::GenerateFlowmonitor()
+{
+  std::vector<std::string> flowmon;
+
+  if(this->GetFlowmonitor())
+  {
+    flowmon.push_back("monitor = flowmonHelper.Install(" + this->m_nodeName + ");");
+  }
+
+  return flowmon; 
+}
+
+void Node::SetFlowmonitor(const bool &state)
+{
+  this->m_enableFlowmonitor = state;
+}
+
+bool Node::GetFlowmonitor()
+{
+  return this->m_enableFlowmonitor;
 }
 
 std::string Node::GetNodeType()

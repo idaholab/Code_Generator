@@ -779,7 +779,13 @@ this->WriteCpp("");
   this->WriteCpp("  /* Flow Monitor */");
 
   this->WriteCpp("  FlowMonitorHelper flowmonHelper;");
-  this->WriteCpp("  Ptr<FlowMonitor> monitor = flowmonHelper.InstallAll();");
+///  this->WriteCpp("  Ptr<FlowMonitor> monitor = flowmonHelper.InstallAll();");
+  this->WriteCpp("  Ptr<FlowMonitor> monitor;");
+  std::vector<std::string> allFlowmon = GenerateFlowmonitor();
+  for(size_t i = 0; i <  allFlowmon.size(); i++)
+  {
+    this->WriteCpp("  " + allFlowmon.at(i));
+  } 
 
   /* Set stop time. */
   size_t stopTime = 0;/* default stop time. */
@@ -1456,6 +1462,24 @@ std::vector<std::string> Generator::GenerateTraceCpp()
   }
 
   return allTrace;
+}
+
+std::vector<std::string> Generator::GenerateFlowmonitor() 
+{
+  std::vector<std::string> allFlowmon;
+
+  std::string nodeName = "";
+  for(size_t i = 0; i <  this->m_listNode.size(); i++)
+  {
+    nodeName = (this->m_listNode.at(i))->GetNodeName();
+      std::vector<std::string> trans = (this->m_listNode.at(i)->GenerateFlowmonitor());
+      for(size_t j = 0; j <  trans.size(); j++)
+      {
+        allFlowmon.push_back(trans.at(j));
+      }
+  }
+
+  return allFlowmon;
 }
 
 //

@@ -478,6 +478,12 @@ class Generator
      */
     std::vector<std::string> GenerateTraceCpp();
 
+    /**
+     * \brief Generate Flowmonitor declaration.
+     * \return Flowmonitor declaration code
+     */
+    std::vector<std::string> GenerateFlowmonitor();
+
     //
     // C++ generation operation part.
     //

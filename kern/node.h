@@ -82,6 +82,11 @@ class Node
      */
     std::string m_type;
 
+    /**
+     * \brief Enable/disable Flowmonitor.
+     */
+    bool m_enableFlowmonitor;
+
   public:
     /**
      * \brief Constructor.
@@ -117,6 +122,13 @@ class Node
      * \return IP stack code.
      */
     std::vector<std::string> GenerateIpStackCpp();
+
+    /**
+     * \brief Generate Flowmonitor install C++ code.
+     * This function returns a vector which contains the declaration of Flowmonitor on a node
+     * \return Flowmonitor declaration code
+     */
+    std::vector<std::string> GenerateFlowmonitor();
 
     /**
      * \brief Set node name.
@@ -187,6 +199,18 @@ class Node
      * \param machinesNumber new machines number
      */
     void SetMachinesNumber(const size_t machinesNumber);
+
+    /**
+     * \brief Enable/disable Flowmonitor.
+     * \param state Flowmonitor state
+     */
+    void SetFlowmonitor(const bool &state);
+
+    /**
+     * \brief Get Flowmonitor state.
+     * \return Flowmonitor state
+     */
+    bool GetFlowmonitor();
 
     /**
      * \brief Get node type.

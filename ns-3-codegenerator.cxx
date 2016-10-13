@@ -50,18 +50,23 @@ properties.no_namespace_schema_location("TopologySchema.xsd");
     //
 
 /// Build nodes ///
+int i = 0;
 Gen::Nodes_type::node_const_iterator ni = g->Nodes().node().begin();
 for (; ni != g->Nodes().node().end(); ni++)
   {
 cerr << "gen->AddNode(" << (*ni).type() << ", " << (*ni).name() << ")" << endl;
   gen->AddNode((*ni).type(), (*ni).name());
+cerr << "gem->GetNode(" << i << ")->SetFlowmonitor(" << (*ni).enableFlowmonitor() << ")" << endl;
+  if ((*ni).enableFlowmonitor() == "true")
+    gen->GetNode(i)->SetFlowmonitor(true);
+  else gen->GetNode(i)->SetFlowmonitor(false);
+  i++;
   }
-
 
 /// Add Network hardware ///
 ///  Ap *ap = dynamic_cast<Ap*>(gen->GetNetworkHardware(0));
 
-int i = 0;
+i = 0;
 Gen::NetworkHardwares_type::networkHardware_const_iterator hi = g->NetworkHardwares().networkHardware().begin();
 Gen::NetworkHardwares_type::networkHardware_type::connectedNodes_type::name_const_iterator namei;
 for (; hi != g->NetworkHardwares().networkHardware().end(); hi++)

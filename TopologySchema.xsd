@@ -57,6 +57,7 @@
                                                          <xsd:sequence>
                                                                <xsd:element name="type" type="nodeType"></xsd:element>
                                                                <xsd:element name="name" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="enableFlowmonitor" type="xsd:string"></xsd:element>
                                                          </xsd:sequence>
                                                    </xsd:complexType>
                                              </xsd:element>

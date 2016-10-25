@@ -65,6 +65,8 @@ cerr << "gem->GetNode(" << i << ")->SetFlowmonitor(" << (*ni).enableFlowmonitor(
 
 /// Add Network hardware ///
 ///  Ap *ap = dynamic_cast<Ap*>(gen->GetNetworkHardware(0));
+char buffer[20];
+std::size_t length;
 
 i = 0;
 Gen::NetworkHardwares_type::networkHardware_const_iterator hi = g->NetworkHardwares().networkHardware().begin();
@@ -73,8 +75,17 @@ for (; hi != g->NetworkHardwares().networkHardware().end(); hi++)
   {
   if (((*hi).type() == "Ap") || ((*hi).type() == "Bridge"))
     {
-cerr << "gen->AddNetworkHardware(" << (*hi).type() << ", " << (*hi).name() << ")" << endl;
-    gen->AddNetworkHardware((*hi).type(), (*hi).name());
+    if (((*hi).name().compare(0, 2, "hw") != 0) && ((*hi).type() == "Ap"))
+      {
+      cerr << "Error-> Improper AP hardware name <" << (*hi).name() << ">" << endl;
+      return 1;
+      }
+
+    length = (*hi).name().copy(buffer, (*hi).name().length(), 2);  //Trim off the first two characters
+    buffer[length] = '\0';
+
+cerr << "gen->AddNetworkHardware(" << (*hi).type() << ", " << buffer << ")" << endl;
+    gen->AddNetworkHardware((*hi).type(), buffer);
 
 cerr << "gen->GetNetworkHardware(" << i << ")->SetDataRate(" << (*hi).dataRate() << ")" << endl;
     gen->GetNetworkHardware(i)->SetDataRate((*hi).dataRate());

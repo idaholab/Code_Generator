@@ -70,7 +70,7 @@
     <NetworkHardwares>
         <networkHardware>
             <type>Ap</type>
-            <name>ap_0</name>
+            <name>hwap_0</name>
             <dataRate>100000000</dataRate>
             <linkDelay>10000</linkDelay>
             <enableTrace>false</enableTrace>

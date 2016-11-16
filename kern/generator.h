@@ -31,6 +31,7 @@
 #include "node.h"
 #include "network-hardware.h"
 #include "application.h"
+#include "flow.h"
 
 #include <iostream>
 #include <fstream>
@@ -239,6 +240,22 @@ class Generator
     size_t GetNNetworkHardwares() const;
 
     /**
+     * \brief Add a flow.
+     * 
+     * This used to add a flow. It add the flow to the
+     * vector listFlow and increment the number of flow.
+     * 
+     * \param type flow type. (Wireless, MultiHop, Wired,...)
+     */
+    void AddFlow(const std::string &type, const std::string &flowName, const std::string &source, const std::string &destination, const std::string &expectedDelay, const std::string &expectedReliability);
+
+    /**
+     * \brief Remove a flow element.
+     * \param name flow name to remove
+     */
+    void RemoveFlow(const std::string &name);
+
+    /**
      * \brief Generate ns-3 C++ code.
      * 
      * This procedure is the main procedure to generate the code from the simulation.
@@ -322,6 +339,13 @@ class Generator
     std::vector<NetworkHardware*> m_listNetworkHardware;
 
     /**
+     * \brief List of flow created instance.
+     * 
+     * This attribute is the list of the created instance of flow.
+     */
+    std::vector<Flow*> m_listFlow;
+
+    /**
      * \brief Number attribute of ping application created.
      */
     size_t m_indiceApplicationPing; 
@@ -390,6 +414,21 @@ class Generator
      * \brief Number attribute of bridge link created.
      */
     size_t m_indiceNetworkHardwareBridge; 
+
+    /**
+     * \brief Number attribute of Wireless flow created.
+     */
+    size_t m_indiceFlowWireless; 
+
+    /**
+     * \brief Number attribute of MultiHop flow created.
+     */
+    size_t m_indiceFlowMultiHop; 
+
+    /**
+     * \brief Number attribute of Wired flow created.
+     */
+    size_t m_indiceFlowWired; 
 
     //
     // C++ code generation operation part
@@ -483,6 +522,18 @@ class Generator
      * \return Flowmonitor declaration code
      */
     std::vector<std::string> GenerateFlowmonitor();
+
+    /**
+     * \brief Generate Metrics C++ code.
+     * \return Metrics code
+     */
+    std::vector<std::string> GenerateMetrics();
+
+    /**
+     * \brief Generate flow C++ code.
+     * \return Flow code
+     */
+    std::vector<std::string> GenerateFlowCpp();
 
     //
     // C++ generation operation part.

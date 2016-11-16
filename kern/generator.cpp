@@ -81,6 +81,12 @@ Generator::Generator(const std::string &simulationName)
   this->m_indiceApplicationMeterDataManagement = 0;
   this->m_indiceApplicationDemandResponse = 0;
 
+  // Flow
+  this->m_indiceFlowWireless = 0;
+  this->m_indiceFlowMultiHop = 0;
+  this->m_indiceFlowWired = 0;
+
+
 }
 
 Generator::~Generator()
@@ -101,6 +107,11 @@ Generator::~Generator()
   for(size_t i = 0; i < this->m_listApplication.size(); i++)
   {
     delete this->m_listApplication.at(i);
+  }
+  /* Flow */
+  for(size_t i = 0; i < this->m_listFlow.size(); i++)
+  {
+    delete this->m_listFlow.at(i);
   }
 }
 
@@ -506,6 +517,61 @@ size_t Generator::GetNNetworkHardwares() const
 }
 
 //
+// Part of Flow.
+//
+void Generator::AddFlow(const std::string &type, const std::string &flowName, const std::string &source, const std::string &destination, const std::string &expectedDelay, const std::string &expectedReliability) 
+{
+/// size_t number = 1;
+  Flow *equi = NULL;
+
+  // call to the right type constructor. 
+  if(type == "WifiFlow")
+  {
+    equi = new Flow(this->m_indiceFlowWired, type, flowName, source, destination, expectedDelay, expectedReliability);
+    this->m_indiceFlowWired += 1;
+  } 
+  else if(type == "MultiHopFlow")
+  {
+    equi = new Flow(this->m_indiceFlowMultiHop, type, flowName, source, destination, expectedDelay, expectedReliability);
+    this->m_indiceFlowMultiHop += 1;
+  } 
+  else if(type == "WiredFlow")
+  {
+    equi = new Flow(this->m_indiceFlowWired, type, flowName, source, destination, expectedDelay, expectedReliability);
+    this->m_indiceFlowWired += 1;
+  } 
+
+  if(equi)
+  {
+    this->m_listFlow.push_back(equi);
+  }
+  else
+  {
+    throw std::logic_error("Add Flow failed! (" + type + ") unknow.");
+  }
+}
+
+void Generator::RemoveFlow(const std::string &name)
+{
+  size_t startNumber = this->m_listFlow.size();
+  for(size_t i = 0; i < this->m_listFlow.size(); i++)
+  {
+    if(this->m_listFlow.at(i)->GetFlowName() == name)
+    {
+      delete this->m_listFlow[i];
+      this->m_listFlow.erase(this->m_listFlow.begin() + i);
+      break;
+    }
+  }
+  size_t endNumber = this->m_listFlow.size();
+  if(startNumber == endNumber)
+  {
+    throw std::logic_error("Flow remove failed! (" + name + ") not found.");
+  }
+}
+
+
+//
 // Part around the C++ code Generation.
 // This part is looking about the code to write.
 //
@@ -781,6 +847,7 @@ this->WriteCpp("");
   this->WriteCpp("  FlowMonitorHelper flowmonHelper;");
 ///  this->WriteCpp("  Ptr<FlowMonitor> monitor = flowmonHelper.InstallAll();");
   this->WriteCpp("  Ptr<FlowMonitor> monitor;");
+
   std::vector<std::string> allFlowmon = GenerateFlowmonitor();
   for(size_t i = 0; i <  allFlowmon.size(); i++)
   {
@@ -807,269 +874,15 @@ this->WriteCpp("");
   this->WriteCpp("");
   this->WriteCpp("  /* Start and clean simulation. */");
   this->WriteCpp("  Simulator::Run ();");
-
   this->WriteCpp("  flowmonHelper.SerializeToXmlFile (\"" + prefixName + ".flowmonitor\", true, true);");
-  this->WriteCpp("  monitor->CheckForLostPackets ();");
-  this->WriteCpp("");
 
-  this->WriteCpp("	// open the database file");
-  this->WriteCpp("	if(sqlite3_open(\"pgcpmtDatabaseTest.sqlite\", &database) == SQLITE_OK)");
-  this->WriteCpp("        std::cout << \"database opened\" << std::endl;");
-  this->WriteCpp("    else");
-  this->WriteCpp("        std::cout << \"open database failed\" << std::endl;");
-  this->WriteCpp("    string mynone = NumberToString(0);");
-  this->WriteCpp("	// create node name and ip address table with data");
-  this->WriteCpp("	query(\"CREATE TABLE if not exists nodeNameIpAdrs (ModelName VARCHAR (20), NodeName VARCHAR (20), IpAdrs VARCHAR (20));\");");
-  this->WriteCpp("	// create flow header table with data");
-  this->WriteCpp("	query(\"CREATE TABLE if not exists flowHeader (ModelName VARCHAR (20), FlowId STRING, sourceNodeName VARCHAR (20), DestNodeName VARCHAR (20), Protocol VARCHAR (20), SourcePort STRING, DestPort STRING);\");");
-  this->WriteCpp("	// create the flow data table");
-  this->WriteCpp("	query(\"CREATE TABLE if not exists flowData (ModelName VARCHAR (20), FlowId STRING, TxBitrate STRING, RxBitrate STRING, MeanDelay STRING, PacketLossRatio STRING);\");");
-  this->WriteCpp("	// create the packet data table");
-  this->WriteCpp("	query(\"CREATE TABLE if not exists packetData (ModelName VARCHAR (20), FlowId STRING, FirstTxPacket STRING, FirstRxPacket STRING, LastTxPacket STRING, LastRxPacket STRING, DelaySum STRING, JitterSum STRING, LastDelay STRING, TxBytes STRING, RxBytes STRING, TxPackets STRING, RxPackets STRING, LostPackets STRING, TimesForwarded STRING, Throughput STRING);\");");
-  this->WriteCpp("	query(\"CREATE TABLE if not exists performanceData (ModelName VARCHAR (20), FlowId STRING, Status VARCHAR (20), FromNode VARCHAR (20), ToNode VARCHAR (20), ExpectedReliability STRING, ExpectedDelay STRING, ActualReliability STRING, ActualDelay STRING, TxPackets STRING, RxPackets STRING, Throughput STRING, Cost STRING);\");");
-  this->WriteCpp("");
-  this->WriteCpp("	// database info");
-  this->WriteCpp("	double txBitrate = 0;");
-  this->WriteCpp("	double rxBitrate = 0;");
-  this->WriteCpp("	double meanDelay = 0;");
-  this->WriteCpp("	uint32_t packetLossRatio = 0;");
-  this->WriteCpp("");
-  this->WriteCpp("	double firstTxPacket = 0;");
-  this->WriteCpp("	double firstRxPacket = 0;");
-  this->WriteCpp("	double lastTxPacket = 0;");
-  this->WriteCpp("	double lastRxPacket = 0;");
-  this->WriteCpp("	double delaySum = 0;");
-  this->WriteCpp("	double jitterSum = 0;");
-  this->WriteCpp("	double lastDelay = 0;");
-  this->WriteCpp("	uint32_t txBytes = 0;");
-  this->WriteCpp("	uint32_t rxBytes = 0;");
-  this->WriteCpp("	uint32_t txPackets = 0;");
-  this->WriteCpp("	uint32_t rxPackets = 0;");
-  this->WriteCpp("	uint32_t lostPackets = 0;");
-  this->WriteCpp("	uint32_t timeForwarded = 0;");
-  this->WriteCpp("	double throughput = 0;");
-  this->WriteCpp("");
+/// Flowmonitor and database
+  std::vector<std::string> allMetrics = GenerateMetrics();
+  for(size_t i = 0; i <  allMetrics.size(); i++)
+  {
+    this->WriteCpp("  " + allMetrics.at(i));
+  } 
 
-  this->WriteCpp("  Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmonHelper.GetClassifier ());");
-  this->WriteCpp("  std::map<FlowId, FlowMonitor::FlowStats> stats = monitor->GetFlowStats ();");
-  this->WriteCpp("  uint32_t txPacketsum = 0;");
-  this->WriteCpp("  uint32_t rxPacketsum = 0;");
-  this->WriteCpp("  uint32_t DropPacketsum = 0;");
-  this->WriteCpp("  uint32_t LostPacketsum = 0;");
-  this->WriteCpp("  double Delaysum = 0;");
-  this->WriteCpp("  std::string protocolName;");
-  this->WriteCpp("  const char *DroppedNames[] = { \"No Route\", \"TTL Expire\", \"Bad Checksum\", \"Queue\", \"Interface Down\", \"Route error\", \"Fragment timeout\", \"Unknown\" };");
-
-  this->WriteCpp("  cout << \" \" << endl;");
-  this->WriteCpp("  cout << \" \" << endl;");
-  this->WriteCpp("  cout << \"IP Address		Node Name\" << endl;");
-  this->WriteCpp("  cout << \"----------		---------\" << endl;");
-  this->WriteCpp("  for (map<string, string>::iterator it = ipMap.begin(); it!=ipMap.end(); ++it)");
-  this->WriteCpp("{");
-  this->WriteCpp("    cout << it->first << \"		\" << it->second << endl;");
-  this->WriteCpp("	string myNodeName = it->second;");
-  this->WriteCpp("	string myIpAdrs = it->first;");
-  this->WriteCpp("	string flowDataQuery (\"INSERT INTO nodeNameIpAdrs VALUES(\"\"'\" + modelName + \"'\" + \", \" + \"'\" + myNodeName + \"'\" + \",\" + \"'\" + myIpAdrs + \"'\" + \");\"  );");
-  this->WriteCpp("	query( flowDataQuery.c_str() );");
-  this->WriteCpp("}");
-
-  this->WriteCpp("");
-  this->WriteCpp("  for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i)");
-  this->WriteCpp("  {");
-  this->WriteCpp("    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);");
-  this->WriteCpp("    txPacketsum += i->second.txPackets;");
-  this->WriteCpp("    rxPacketsum += i->second.rxPackets;");
-  this->WriteCpp("    LostPacketsum += i->second.lostPackets;");
-  this->WriteCpp("    DropPacketsum += i->second.packetsDropped.size();");
-  this->WriteCpp("    Delaysum += i->second.delaySum.GetSeconds();");
-  this->WriteCpp("/*    cout << \">\" << endl;");
-  this->WriteCpp("    cout << \">\" << endl;");
-  this->WriteCpp("    cout << \">\" << endl;");
-  this->WriteCpp("*/");
-  this->WriteCpp("    if (t.protocol == 17)");
-  this->WriteCpp("            protocolName = \"UDP\";");
-  this->WriteCpp("    else if (t.protocol == 6)");
-  this->WriteCpp("              protocolName = \"TCP\";");
-  this->WriteCpp("            else protocolName = \"UNK\";");
-  this->WriteCpp("            ");
-  this->WriteCpp("    cout << \"Flow ID: \" << i->first << endl;");
-  this->WriteCpp("    cout << \"======\" << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    std::ostringstream srcAddrOss;");
-  this->WriteCpp("    std::ostringstream dstAddrOss;");
-  this->WriteCpp("    t.sourceAddress.Print (srcAddrOss);");
-  this->WriteCpp("    t.destinationAddress.Print (dstAddrOss);");
-  this->WriteCpp("");
-  this->WriteCpp("    cout << protocolName << \" \" << ipMap[srcAddrOss.str()] << \"/\" << srcAddrOss.str() << \"/\" << t.sourcePort << \" ----> \" << ipMap[dstAddrOss.str()] << \"/\" << dstAddrOss.str() << \"/\" << t.destinationPort << endl;");
-  this->WriteCpp("    cout << \" \" << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    if ((i->second.timeLastTxPacket - i->second.timeFirstTxPacket) == 0)");
-  this->WriteCpp("      cout << \"Tx bitrate: 0 kbps\" << endl;");
-  this->WriteCpp("    else");
-  this->WriteCpp("      cout << \"Tx bitrate:\" << (8.0 * i->second.txBytes * 1e-3 * 1e9) / (i->second.timeLastTxPacket - i->second.timeFirstTxPacket) << \" kbps\" << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    if ((i->second.timeLastRxPacket - i->second.timeFirstRxPacket) == 0)");
-  this->WriteCpp("      cout << \"Rx bitrate: 0 kbps\" << endl;");
-  this->WriteCpp("    else");
-  this->WriteCpp("      cout << \"Rx bitrate:\" << (8.0 * i->second.rxBytes * 1e-3 * 1e9) / (i->second.timeLastRxPacket - i->second.timeFirstRxPacket) << \" kbps\" << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    if (i->second.rxPackets == 0)");
-  this->WriteCpp("      cout << \"Mean delay: 0 ms\" << endl;");
-  this->WriteCpp("    else cout << \"Mean delay:\" << (1000 * i->second.delaySum.GetSeconds()) / (i->second.rxPackets) << \" ms\" << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    if ((i->second.rxPackets + i->second.lostPackets) == 0)");
-  this->WriteCpp("      cout << \"Packet Loss ratio: 0%\" << endl;");
-  this->WriteCpp("    else cout << \"Packet Loss ratio: \" << ((i->second.lostPackets * 1.0) / (i->second.rxPackets + i->second.lostPackets) * 1.0) * 100 << \"%\" << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    cout << \" \" << endl;");
-  this->WriteCpp("    cout << \"First Tx Packet: \" << i->second.timeFirstTxPacket.GetSeconds() << \" secs.\" << endl;");
-  this->WriteCpp("    cout << \"First Rx Packet: \" << i->second.timeFirstRxPacket.GetSeconds() << \" secs.\" << endl;");
-  this->WriteCpp("    cout << \"Last Tx Packet: \" << i->second.timeLastTxPacket.GetSeconds() << \" secs.\" << endl;");
-  this->WriteCpp("    cout << \"Last Rx Packet: \" << i->second.timeLastRxPacket.GetSeconds() << \" secs.\" << endl;");
-  this->WriteCpp("    cout << \"Delay Sum: \" << i->second.delaySum.GetSeconds() << \" secs.\" << endl;");
-  this->WriteCpp("    cout << \"Jitter Sum: \" << i->second.jitterSum.GetSeconds() << \" secs.\" << endl;");
-  this->WriteCpp("    cout << \"Last Delay: \" << i->second.lastDelay.GetSeconds() << \" secs.\" << endl;");
-  this->WriteCpp("    cout << \"Tx Bytes: \" << i->second.txBytes << endl;");
-  this->WriteCpp("    cout << \"Rx Bytes: \" << i->second.rxBytes << endl;");
-  this->WriteCpp("    cout << \"Tx Packets: \" << i->second.txPackets << endl;");
-  this->WriteCpp("    cout << \"Rx Packets: \" << i->second.rxPackets << endl;");
-  this->WriteCpp("    cout << \"Lost Packets: \" << i->second.lostPackets << endl;");
-  this->WriteCpp("    cout << \"Times Forwarded: \" << i->second.timesForwarded << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    if ((i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds()) == 0)");
-  this->WriteCpp("      cout << \"Throughput: 0 Kbps\" << endl;");
-  this->WriteCpp("    else cout << \"Throughput: \" << i->second.rxBytes * 8.0 / (i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds()) / 1024  << \" Kbps\" << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    cout << \" \" << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("    if (!i->second.packetsDropped.empty())");
-  this->WriteCpp("      {");
-  this->WriteCpp("      cout << \"Packets Dropped:\" << endl;");
-  this->WriteCpp("      cout << \" \" << endl;");
-  this->WriteCpp("      }");
-  this->WriteCpp("");
-  this->WriteCpp("    for (uint32_t reasonCode = 0; reasonCode < i->second.packetsDropped.size (); reasonCode++)");
-  this->WriteCpp("    {");
-  this->WriteCpp("      cout << DroppedNames[reasonCode] << \":\" << i->second.packetsDropped[reasonCode] << endl;");
-  this->WriteCpp("    }");
-
-  this->WriteCpp("");
-  this->WriteCpp("    // insert flow header data into database");
-  this->WriteCpp("	string myFlowIdNumber = NumberToString(i->first);");
-  this->WriteCpp("	string mySourceIp = srcAddrOss.str();");
-  this->WriteCpp("	string mySourceName = ipMap[srcAddrOss.str()];");
-  this->WriteCpp("	string myDestName = ipMap[dstAddrOss.str()];");
-  this->WriteCpp("	string myDestIp = dstAddrOss.str();");
-  this->WriteCpp("	string myProtocol = NumberToString(Delaysum / txPacketsum);");
-  this->WriteCpp("	string mySourcePort = NumberToString(t.sourcePort);");
-  this->WriteCpp("	string myDestPort = NumberToString(t.destinationPort);");
-  this->WriteCpp("	string flowHeaderQuery (\"INSERT INTO flowHeader VALUES(\"\"'\" + modelName + \"'\" + \", \" + myFlowIdNumber + \",\" + \"'\" + mySourceName + \"'\" + \",\" + \"'\" + myDestName + \"'\" + \",\" + \"'\" + protocolName + \"'\"  + \",\" + mySourcePort + \",\" + myDestPort + \");\"  );");
-  this->WriteCpp("	query( flowHeaderQuery.c_str() );");
-  this->WriteCpp("");
-  this->WriteCpp("	// insert flow data into database");
-  this->WriteCpp("	string mytxBitrate = NumberToString(txBitrate);");
-  this->WriteCpp("	string myrxBitrate = NumberToString(rxBitrate);");
-  this->WriteCpp("	string mymeanDelay = NumberToString(meanDelay);");
-  this->WriteCpp("	string mypacketLossRatio = NumberToString(packetLossRatio);");
-  this->WriteCpp("	string flowDataQuery (\"INSERT INTO flowData VALUES(\"\"'\" + modelName + \"'\" + \", \" + myFlowIdNumber + \",\" + mytxBitrate + \",\" + myrxBitrate + \",\" + mymeanDelay + \",\" + mypacketLossRatio + \");\"  );");
-  this->WriteCpp("	query( flowDataQuery.c_str() );");
-  this->WriteCpp("");
-  this->WriteCpp("    // packet data into database");
-  this->WriteCpp("	firstTxPacket = i->second.timeFirstTxPacket.GetSeconds();");
-  this->WriteCpp("	firstRxPacket = i->second.timeFirstRxPacket.GetSeconds();	");
-  this->WriteCpp("	lastTxPacket = i->second.timeLastTxPacket.GetSeconds();");
-  this->WriteCpp("	lastRxPacket = i->second.timeLastRxPacket.GetSeconds();	");
-  this->WriteCpp("	delaySum = i->second.delaySum.GetSeconds();");
-  this->WriteCpp("	jitterSum = i->second.jitterSum.GetSeconds();	");
-  this->WriteCpp("	lastDelay = i->second.lastDelay.GetSeconds();	");
-  this->WriteCpp("	txBytes = i->second.txBytes;");
-  this->WriteCpp("	rxBytes = i->second.rxBytes;");
-  this->WriteCpp("	txPackets = i->second.txPackets;");
-  this->WriteCpp("	rxPackets = i->second.rxPackets;");
-  this->WriteCpp("	timeForwarded = i->second.timesForwarded;");
-  this->WriteCpp("	throughput = i->second.rxBytes * 8.0 / (i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds()) / 1024;	");
-  this->WriteCpp("");
-  this->WriteCpp("	string myfirstTxPacket = NumberToString(firstTxPacket);");
-  this->WriteCpp("	string myfirstRxPacket = NumberToString(firstRxPacket);");
-  this->WriteCpp("	string mylastTxPacket = NumberToString(lastTxPacket);");
-  this->WriteCpp("	string mylastRxPacket = NumberToString(lastRxPacket);");
-  this->WriteCpp("	string mydelaySum = NumberToString(delaySum);");
-  this->WriteCpp("	string myjitterSum = NumberToString(jitterSum);");
-  this->WriteCpp("	string mylastDelay = NumberToString(lastDelay);");
-  this->WriteCpp("	string mytxBytes = NumberToString(txBytes);");
-  this->WriteCpp("	string myrxBytes = NumberToString(rxBytes);");
-  this->WriteCpp("	string mytxPackets = NumberToString(txPackets);");
-  this->WriteCpp("	string myrxPackets = NumberToString(rxPackets);");
-  this->WriteCpp("	string mylostPackets = NumberToString(lostPackets);");
-  this->WriteCpp("	string mytimeForwarded = NumberToString(timeForwarded);");
-  this->WriteCpp("	string mythroughput = NumberToString(throughput);");
-  this->WriteCpp("	string packetDataQuery (\"INSERT INTO packetData VALUES(\"\"'\" + modelName + \"'\" + \", \" + myFlowIdNumber + \",\" + myfirstTxPacket + \",\" + myfirstRxPacket + \",\" + mylastTxPacket + \",\" + mylastRxPacket + \",\" + mydelaySum + \",\" + myjitterSum + \",\" + mylastDelay + \",\" + mytxBytes + \",\" + myrxBytes + \",\" + mytxPackets + \",\" + myrxPackets + \",\" + mylostPackets + \",\" + mytimeForwarded + \",\" + mythroughput + \");\"  );");
-  this->WriteCpp("	query( packetDataQuery.c_str() );");
-  this->WriteCpp("");
-  this->WriteCpp("	// calculate performance data and complete performance data table");
-  this->WriteCpp("	// throughtput = mythroughput");
-  this->WriteCpp("	// average flow delay = myDelaySum/myrxPackets");
-  this->WriteCpp("	// reliability = mytxPackets/myrxPackets");
-  this->WriteCpp("  	std::string myStatus = \"Ok\";");
-  this->WriteCpp("	double actualReliability;");
-  this->WriteCpp("	double actualDelay;");
-  this->WriteCpp("        if (rxPackets == 0)");
-  this->WriteCpp("          {");
-  this->WriteCpp("          actualReliability = 0;");
-  this->WriteCpp("          actualDelay = 0;");
-  this->WriteCpp("          }");
-  this->WriteCpp("        else");
-  this->WriteCpp("          {");
-  this->WriteCpp("          actualReliability = txPackets/rxPackets;");
-  this->WriteCpp("          actualDelay = delaySum/rxPackets;");
-  this->WriteCpp("          }");
-  this->WriteCpp("	string myactualReliability = NumberToString(actualReliability);");
-  this->WriteCpp("	string myactualDelay = NumberToString(actualDelay);");
-  this->WriteCpp("");
-  this->WriteCpp("	string myExpectedReliability = NumberToString(0.98);");
-  this->WriteCpp("	string myExpectedDelay = NumberToString(15);");
-  this->WriteCpp("	string myCost = NumberToString(0);");
-  this->WriteCpp("	string perfDataQuery (\"INSERT INTO performanceData VALUES(\"\"'\" + modelName + \"'\" + \", \" + myFlowIdNumber + \",\" + \"'\" + myStatus + \"'\" + \",\" + \"'\" + mySourceName + \"'\" + \",\" + \"'\" + myDestName + \"'\" + \",\" + \"'\" + myExpectedReliability + \"'\" + \",\" + \"'\" + myExpectedDelay + \"'\" + \",\" + myactualReliability + \",\" + myactualDelay + \",\" + mytxPackets + \",\" + myrxPackets + \",\" + mythroughput + \",\" + \"'\" + myCost + \"'\" + \");\"  );");
-  this->WriteCpp("	query( perfDataQuery.c_str() );");
-  this->WriteCpp("");
-  this->WriteCpp("");
-
-  this->WriteCpp("  }");
-  this->WriteCpp(" ");
-  this->WriteCpp(" ");
-  this->WriteCpp("  cout << \" \" << endl;");
-  this->WriteCpp("  cout << \" \" << endl;");
-  this->WriteCpp("  cout << \"================================================\" << endl;");
-  this->WriteCpp("  cout << \"=================Summary========================\" << endl;");
-  this->WriteCpp("  cout << \"================================================\" << endl;");
-  this->WriteCpp("  cout << \"All Tx Packets: \" << txPacketsum << endl;");
-  this->WriteCpp("  cout << \"All Rx Packets: \" << rxPacketsum << endl;");
-  this->WriteCpp("  cout << \"All Delay: \" << Delaysum / txPacketsum << endl;");
-  this->WriteCpp("  cout << \"All Lost Packets: \" << LostPacketsum << endl;");
-  this->WriteCpp("  cout << \"All Drop Packets: \" << DropPacketsum << endl;");
-  this->WriteCpp("");
-  this->WriteCpp("  if (txPacketsum != 0)");
-  this->WriteCpp("  {");
-  this->WriteCpp("    cout << \"Packets Delivery Ratio: \" << ((rxPacketsum * 100) / txPacketsum) << \"%\" << endl;");
-  this->WriteCpp("    cout << \"Packets Lost Ratio: \" << ((LostPacketsum * 100) / txPacketsum) << \"%\" << endl;");
-  this->WriteCpp("  }");
-  this->WriteCpp("");
-  this->WriteCpp("  	double newLostPacketsum = LostPacketsum/txPacketsum;");
-  this->WriteCpp("    // Summary information for all packet flows");
-  this->WriteCpp("	string mytx = NumberToString(txPacketsum);");
-  this->WriteCpp("	string myrx = NumberToString(rxPacketsum);");
-  this->WriteCpp("	string myDelay = NumberToString(Delaysum / txPacketsum);");
-  this->WriteCpp("	string myLost = NumberToString(LostPacketsum);");
-  this->WriteCpp("	string myDrop = NumberToString(DropPacketsum);");
-  this->WriteCpp("	string myDelRatio = NumberToString((rxPacketsum) / txPacketsum);");
-  this->WriteCpp(" 	string myLostRatio = NumberToString(newLostPacketsum);");
-  this->WriteCpp("");
-  this->WriteCpp("	query(\"CREATE TABLE if not exists summary (ModelName VARCHAR (20), TxPackets STRING, RxPackets STRING, Delay STRING, LostPackets STRING, DroppedPackets STRING, PacketDeliveryRatio STRING, PacketLostRatio STRING);\");");
-  this->WriteCpp("	string mysqlquery (\"INSERT INTO summary VALUES(\"\"'\" + modelName + \"'\" + \", \" + mytx + \", \" + myrx + \", \" + myDelay + \", \" + myLost + \", \" + myDrop + \", \" + myDelRatio + \", \" + myLostRatio + \");\"  );");
-  this->WriteCpp("	query( mysqlquery.c_str() );");
-  this->WriteCpp("");
-  this->WriteCpp("	// close the database");
-  this->WriteCpp("	sqlite3_close(database);");
   this->WriteCpp("");
   this->WriteCpp("  Simulator::Destroy ();");
 
@@ -1480,6 +1293,299 @@ std::vector<std::string> Generator::GenerateFlowmonitor()
   }
 
   return allFlowmon;
+}
+
+std::vector<std::string> Generator::GenerateFlowCpp() 
+{
+  std::vector<std::string> allFlows;
+  /* get all the flow code. */
+  for(size_t i = 0; i <  this->m_listFlow.size(); i++)
+  {
+    std::vector<std::string> trans = (this->m_listFlow.at(i))->GenerateFlowCpp();
+    for(size_t j = 0; j <  trans.size(); j++)
+    {
+      allFlows.push_back(trans.at(j));
+    }
+  }
+  return allFlows;
+}
+
+std::vector<std::string> Generator::GenerateMetrics() 
+{
+  std::vector<std::string> allMetrics;
+ 
+///  allRoutes.push_back("Ipv4GlobalRoutingHelper::PopulateRoutingTables ();");
+
+  allMetrics.push_back("  monitor->CheckForLostPackets ();");
+  allMetrics.push_back("");
+
+  allMetrics.push_back("	// open the database file");
+  allMetrics.push_back("	if(sqlite3_open(\"pgcpmtDatabaseTest.sqlite\", &database) == SQLITE_OK)");
+  allMetrics.push_back("        std::cout << \"database opened\" << std::endl;");
+  allMetrics.push_back("    else");
+  allMetrics.push_back("        std::cout << \"open database failed\" << std::endl;");
+  allMetrics.push_back("    string mynone = NumberToString(0);");
+  allMetrics.push_back("	// create node name and ip address table with data");
+  allMetrics.push_back("	query(\"CREATE TABLE if not exists nodeNameIpAdrs (ModelName VARCHAR (20), NodeName VARCHAR (20), IpAdrs VARCHAR (20));\");");
+  allMetrics.push_back("	// create flow header table with data");
+  allMetrics.push_back("	query(\"CREATE TABLE if not exists flowHeader (ModelName VARCHAR (20), FlowId STRING, sourceNodeName VARCHAR (20), DestNodeName VARCHAR (20), Protocol VARCHAR (20), SourcePort STRING, DestPort STRING);\");");
+  allMetrics.push_back("	// create the flow data table");
+  allMetrics.push_back("	query(\"CREATE TABLE if not exists flowData (ModelName VARCHAR (20), FlowId STRING, TxBitrate STRING, RxBitrate STRING, MeanDelay STRING, PacketLossRatio STRING);\");");
+  allMetrics.push_back("	// create the packet data table");
+  allMetrics.push_back("	query(\"CREATE TABLE if not exists packetData (ModelName VARCHAR (20), FlowId STRING, FirstTxPacket STRING, FirstRxPacket STRING, LastTxPacket STRING, LastRxPacket STRING, DelaySum STRING, JitterSum STRING, LastDelay STRING, TxBytes STRING, RxBytes STRING, TxPackets STRING, RxPackets STRING, LostPackets STRING, TimesForwarded STRING, Throughput STRING);\");");
+  allMetrics.push_back("	query(\"CREATE TABLE if not exists performanceData (ModelName VARCHAR (20), FlowId STRING, Status VARCHAR (20), FromNode VARCHAR (20), ToNode VARCHAR (20), ExpectedReliability STRING, ExpectedDelay STRING, ActualReliability STRING, ActualDelay STRING, TxPackets STRING, RxPackets STRING, Throughput STRING, Cost STRING);\");");
+  allMetrics.push_back("");
+  allMetrics.push_back("	// database info");
+  allMetrics.push_back("	double txBitrate = 0;");
+  allMetrics.push_back("	double rxBitrate = 0;");
+  allMetrics.push_back("	double meanDelay = 0;");
+  allMetrics.push_back("	uint32_t packetLossRatio = 0;");
+  allMetrics.push_back("");
+  allMetrics.push_back("	double firstTxPacket = 0;");
+  allMetrics.push_back("	double firstRxPacket = 0;");
+  allMetrics.push_back("	double lastTxPacket = 0;");
+  allMetrics.push_back("	double lastRxPacket = 0;");
+  allMetrics.push_back("	double delaySum = 0;");
+  allMetrics.push_back("	double jitterSum = 0;");
+  allMetrics.push_back("	double lastDelay = 0;");
+  allMetrics.push_back("	uint32_t txBytes = 0;");
+  allMetrics.push_back("	uint32_t rxBytes = 0;");
+  allMetrics.push_back("	uint32_t txPackets = 0;");
+  allMetrics.push_back("	uint32_t rxPackets = 0;");
+  allMetrics.push_back("	uint32_t lostPackets = 0;");
+  allMetrics.push_back("	uint32_t timeForwarded = 0;");
+  allMetrics.push_back("	double throughput = 0;");
+  allMetrics.push_back("");
+
+  allMetrics.push_back("  Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowmonHelper.GetClassifier ());");
+  allMetrics.push_back("  std::map<FlowId, FlowMonitor::FlowStats> stats = monitor->GetFlowStats ();");
+  allMetrics.push_back("  uint32_t txPacketsum = 0;");
+  allMetrics.push_back("  uint32_t rxPacketsum = 0;");
+  allMetrics.push_back("  uint32_t DropPacketsum = 0;");
+  allMetrics.push_back("  uint32_t LostPacketsum = 0;");
+  allMetrics.push_back("  double Delaysum = 0;");
+  allMetrics.push_back("  std::string protocolName;");
+  allMetrics.push_back("  const char *DroppedNames[] = { \"No Route\", \"TTL Expire\", \"Bad Checksum\", \"Queue\", \"Interface Down\", \"Route error\", \"Fragment timeout\", \"Unknown\" };");
+
+  allMetrics.push_back("  cout << \" \" << endl;");
+  allMetrics.push_back("  cout << \" \" << endl;");
+  allMetrics.push_back("  cout << \"IP Address		Node Name\" << endl;");
+  allMetrics.push_back("  cout << \"----------		---------\" << endl;");
+  allMetrics.push_back("  for (map<string, string>::iterator it = ipMap.begin(); it!=ipMap.end(); ++it)");
+  allMetrics.push_back("{");
+  allMetrics.push_back("    cout << it->first << \"		\" << it->second << endl;");
+  allMetrics.push_back("	string myNodeName = it->second;");
+  allMetrics.push_back("	string myIpAdrs = it->first;");
+  allMetrics.push_back("	string flowDataQuery (\"INSERT INTO nodeNameIpAdrs VALUES(\"\"'\" + modelName + \"'\" + \", \" + \"'\" + myNodeName + \"'\" + \",\" + \"'\" + myIpAdrs + \"'\" + \");\"  );");
+  allMetrics.push_back("	query( flowDataQuery.c_str() );");
+  allMetrics.push_back("}");
+
+  allMetrics.push_back("");
+  allMetrics.push_back("  for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i = stats.begin (); i != stats.end (); ++i)");
+  allMetrics.push_back("  {");
+  allMetrics.push_back("    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow (i->first);");
+  allMetrics.push_back("    txPacketsum += i->second.txPackets;");
+  allMetrics.push_back("    rxPacketsum += i->second.rxPackets;");
+  allMetrics.push_back("    LostPacketsum += i->second.lostPackets;");
+  allMetrics.push_back("    DropPacketsum += i->second.packetsDropped.size();");
+  allMetrics.push_back("    Delaysum += i->second.delaySum.GetSeconds();");
+  allMetrics.push_back("/*    cout << \">\" << endl;");
+  allMetrics.push_back("    cout << \">\" << endl;");
+  allMetrics.push_back("    cout << \">\" << endl;");
+  allMetrics.push_back("*/");
+  allMetrics.push_back("    if (t.protocol == 17)");
+  allMetrics.push_back("            protocolName = \"UDP\";");
+  allMetrics.push_back("    else if (t.protocol == 6)");
+  allMetrics.push_back("              protocolName = \"TCP\";");
+  allMetrics.push_back("            else protocolName = \"UNK\";");
+  allMetrics.push_back("            ");
+  allMetrics.push_back("    cout << \"Flow ID: \" << i->first << endl;");
+  allMetrics.push_back("    cout << \"======\" << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    std::ostringstream srcAddrOss;");
+  allMetrics.push_back("    std::ostringstream dstAddrOss;");
+  allMetrics.push_back("    t.sourceAddress.Print (srcAddrOss);");
+  allMetrics.push_back("    t.destinationAddress.Print (dstAddrOss);");
+  allMetrics.push_back("");
+  allMetrics.push_back("    cout << protocolName << \" \" << ipMap[srcAddrOss.str()] << \"/\" << srcAddrOss.str() << \"/\" << t.sourcePort << \" ----> \" << ipMap[dstAddrOss.str()] << \"/\" << dstAddrOss.str() << \"/\" << t.destinationPort << endl;");
+  allMetrics.push_back("    cout << \" \" << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    if ((i->second.timeLastTxPacket - i->second.timeFirstTxPacket) == 0)");
+  allMetrics.push_back("      cout << \"Tx bitrate: 0 kbps\" << endl;");
+  allMetrics.push_back("    else");
+  allMetrics.push_back("      cout << \"Tx bitrate:\" << (8.0 * i->second.txBytes * 1e-3 * 1e9) / (i->second.timeLastTxPacket - i->second.timeFirstTxPacket) << \" kbps\" << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    if ((i->second.timeLastRxPacket - i->second.timeFirstRxPacket) == 0)");
+  allMetrics.push_back("      cout << \"Rx bitrate: 0 kbps\" << endl;");
+  allMetrics.push_back("    else");
+  allMetrics.push_back("      cout << \"Rx bitrate:\" << (8.0 * i->second.rxBytes * 1e-3 * 1e9) / (i->second.timeLastRxPacket - i->second.timeFirstRxPacket) << \" kbps\" << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    if (i->second.rxPackets == 0)");
+  allMetrics.push_back("      cout << \"Mean delay: 0 ms\" << endl;");
+  allMetrics.push_back("    else cout << \"Mean delay:\" << (1000 * i->second.delaySum.GetSeconds()) / (i->second.rxPackets) << \" ms\" << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    if ((i->second.rxPackets + i->second.lostPackets) == 0)");
+  allMetrics.push_back("      cout << \"Packet Loss ratio: 0%\" << endl;");
+  allMetrics.push_back("    else cout << \"Packet Loss ratio: \" << ((i->second.lostPackets * 1.0) / (i->second.rxPackets + i->second.lostPackets) * 1.0) * 100 << \"%\" << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    cout << \" \" << endl;");
+  allMetrics.push_back("    cout << \"First Tx Packet: \" << i->second.timeFirstTxPacket.GetSeconds() << \" secs.\" << endl;");
+  allMetrics.push_back("    cout << \"First Rx Packet: \" << i->second.timeFirstRxPacket.GetSeconds() << \" secs.\" << endl;");
+  allMetrics.push_back("    cout << \"Last Tx Packet: \" << i->second.timeLastTxPacket.GetSeconds() << \" secs.\" << endl;");
+  allMetrics.push_back("    cout << \"Last Rx Packet: \" << i->second.timeLastRxPacket.GetSeconds() << \" secs.\" << endl;");
+  allMetrics.push_back("    cout << \"Delay Sum: \" << i->second.delaySum.GetSeconds() << \" secs.\" << endl;");
+  allMetrics.push_back("    cout << \"Jitter Sum: \" << i->second.jitterSum.GetSeconds() << \" secs.\" << endl;");
+  allMetrics.push_back("    cout << \"Last Delay: \" << i->second.lastDelay.GetSeconds() << \" secs.\" << endl;");
+  allMetrics.push_back("    cout << \"Tx Bytes: \" << i->second.txBytes << endl;");
+  allMetrics.push_back("    cout << \"Rx Bytes: \" << i->second.rxBytes << endl;");
+  allMetrics.push_back("    cout << \"Tx Packets: \" << i->second.txPackets << endl;");
+  allMetrics.push_back("    cout << \"Rx Packets: \" << i->second.rxPackets << endl;");
+  allMetrics.push_back("    cout << \"Lost Packets: \" << i->second.lostPackets << endl;");
+  allMetrics.push_back("    cout << \"Times Forwarded: \" << i->second.timesForwarded << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    if ((i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds()) == 0)");
+  allMetrics.push_back("      cout << \"Throughput: 0 Kbps\" << endl;");
+  allMetrics.push_back("    else cout << \"Throughput: \" << i->second.rxBytes * 8.0 / (i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds()) / 1024  << \" Kbps\" << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    cout << \" \" << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("    if (!i->second.packetsDropped.empty())");
+  allMetrics.push_back("      {");
+  allMetrics.push_back("      cout << \"Packets Dropped:\" << endl;");
+  allMetrics.push_back("      cout << \" \" << endl;");
+  allMetrics.push_back("      }");
+  allMetrics.push_back("");
+  allMetrics.push_back("    for (uint32_t reasonCode = 0; reasonCode < i->second.packetsDropped.size (); reasonCode++)");
+  allMetrics.push_back("    {");
+  allMetrics.push_back("      cout << DroppedNames[reasonCode] << \":\" << i->second.packetsDropped[reasonCode] << endl;");
+  allMetrics.push_back("    }");
+
+  allMetrics.push_back("");
+  allMetrics.push_back("    // insert flow header data into database");
+  allMetrics.push_back("	string myFlowIdNumber = NumberToString(i->first);");
+  allMetrics.push_back("	string mySourceIp = srcAddrOss.str();");
+  allMetrics.push_back("	string mySourceName = ipMap[srcAddrOss.str()];");
+  allMetrics.push_back("	string myDestName = ipMap[dstAddrOss.str()];");
+  allMetrics.push_back("	string myDestIp = dstAddrOss.str();");
+  allMetrics.push_back("	string myProtocol = NumberToString(Delaysum / txPacketsum);");
+  allMetrics.push_back("	string mySourcePort = NumberToString(t.sourcePort);");
+  allMetrics.push_back("	string myDestPort = NumberToString(t.destinationPort);");
+  allMetrics.push_back("	string flowHeaderQuery (\"INSERT INTO flowHeader VALUES(\"\"'\" + modelName + \"'\" + \", \" + myFlowIdNumber + \",\" + \"'\" + mySourceName + \"'\" + \",\" + \"'\" + myDestName + \"'\" + \",\" + \"'\" + protocolName + \"'\"  + \",\" + mySourcePort + \",\" + myDestPort + \");\"  );");
+  allMetrics.push_back("	query( flowHeaderQuery.c_str() );");
+  allMetrics.push_back("");
+  allMetrics.push_back("	// insert flow data into database");
+  allMetrics.push_back("	string mytxBitrate = NumberToString(txBitrate);");
+  allMetrics.push_back("	string myrxBitrate = NumberToString(rxBitrate);");
+  allMetrics.push_back("	string mymeanDelay = NumberToString(meanDelay);");
+  allMetrics.push_back("	string mypacketLossRatio = NumberToString(packetLossRatio);");
+  allMetrics.push_back("	string flowDataQuery (\"INSERT INTO flowData VALUES(\"\"'\" + modelName + \"'\" + \", \" + myFlowIdNumber + \",\" + mytxBitrate + \",\" + myrxBitrate + \",\" + mymeanDelay + \",\" + mypacketLossRatio + \");\"  );");
+  allMetrics.push_back("	query( flowDataQuery.c_str() );");
+  allMetrics.push_back("");
+  allMetrics.push_back("    // packet data into database");
+  allMetrics.push_back("	firstTxPacket = i->second.timeFirstTxPacket.GetSeconds();");
+  allMetrics.push_back("	firstRxPacket = i->second.timeFirstRxPacket.GetSeconds();	");
+  allMetrics.push_back("	lastTxPacket = i->second.timeLastTxPacket.GetSeconds();");
+  allMetrics.push_back("	lastRxPacket = i->second.timeLastRxPacket.GetSeconds();	");
+  allMetrics.push_back("	delaySum = i->second.delaySum.GetSeconds();");
+  allMetrics.push_back("	jitterSum = i->second.jitterSum.GetSeconds();	");
+  allMetrics.push_back("	lastDelay = i->second.lastDelay.GetSeconds();	");
+  allMetrics.push_back("	txBytes = i->second.txBytes;");
+  allMetrics.push_back("	rxBytes = i->second.rxBytes;");
+  allMetrics.push_back("	txPackets = i->second.txPackets;");
+  allMetrics.push_back("	rxPackets = i->second.rxPackets;");
+  allMetrics.push_back("	timeForwarded = i->second.timesForwarded;");
+  allMetrics.push_back("	throughput = i->second.rxBytes * 8.0 / (i->second.timeLastRxPacket.GetSeconds() - i->second.timeFirstTxPacket.GetSeconds()) / 1024;	");
+  allMetrics.push_back("");
+  allMetrics.push_back("	string myfirstTxPacket = NumberToString(firstTxPacket);");
+  allMetrics.push_back("	string myfirstRxPacket = NumberToString(firstRxPacket);");
+  allMetrics.push_back("	string mylastTxPacket = NumberToString(lastTxPacket);");
+  allMetrics.push_back("	string mylastRxPacket = NumberToString(lastRxPacket);");
+  allMetrics.push_back("	string mydelaySum = NumberToString(delaySum);");
+  allMetrics.push_back("	string myjitterSum = NumberToString(jitterSum);");
+  allMetrics.push_back("	string mylastDelay = NumberToString(lastDelay);");
+  allMetrics.push_back("	string mytxBytes = NumberToString(txBytes);");
+  allMetrics.push_back("	string myrxBytes = NumberToString(rxBytes);");
+  allMetrics.push_back("	string mytxPackets = NumberToString(txPackets);");
+  allMetrics.push_back("	string myrxPackets = NumberToString(rxPackets);");
+  allMetrics.push_back("	string mylostPackets = NumberToString(lostPackets);");
+  allMetrics.push_back("	string mytimeForwarded = NumberToString(timeForwarded);");
+  allMetrics.push_back("	string mythroughput = NumberToString(throughput);");
+  allMetrics.push_back("	string packetDataQuery (\"INSERT INTO packetData VALUES(\"\"'\" + modelName + \"'\" + \", \" + myFlowIdNumber + \",\" + myfirstTxPacket + \",\" + myfirstRxPacket + \",\" + mylastTxPacket + \",\" + mylastRxPacket + \",\" + mydelaySum + \",\" + myjitterSum + \",\" + mylastDelay + \",\" + mytxBytes + \",\" + myrxBytes + \",\" + mytxPackets + \",\" + myrxPackets + \",\" + mylostPackets + \",\" + mytimeForwarded + \",\" + mythroughput + \");\"  );");
+  allMetrics.push_back("	query( packetDataQuery.c_str() );");
+  allMetrics.push_back("");
+  allMetrics.push_back("	// calculate performance data and complete performance data table");
+  allMetrics.push_back("	// throughtput = mythroughput");
+  allMetrics.push_back("	// average flow delay = myDelaySum/myrxPackets");
+  allMetrics.push_back("	// reliability = mytxPackets/myrxPackets");
+  allMetrics.push_back("  	std::string myStatus = \"Ok\";");
+  allMetrics.push_back("	double actualReliability;");
+  allMetrics.push_back("	double actualDelay;");
+  allMetrics.push_back("        if (rxPackets == 0)");
+  allMetrics.push_back("          {");
+  allMetrics.push_back("          actualReliability = 0;");
+  allMetrics.push_back("          actualDelay = 0;");
+  allMetrics.push_back("          }");
+  allMetrics.push_back("        else");
+  allMetrics.push_back("          {");
+  allMetrics.push_back("          actualReliability = txPackets/rxPackets;");
+  allMetrics.push_back("          actualDelay = delaySum/rxPackets;");
+  allMetrics.push_back("          }");
+  allMetrics.push_back("	string myactualReliability = NumberToString(actualReliability);");
+  allMetrics.push_back("	string myactualDelay = NumberToString(actualDelay);");
+  allMetrics.push_back("");
+  allMetrics.push_back("	string myExpectedReliability = NumberToString(0.98);");
+  allMetrics.push_back("	string myExpectedDelay = NumberToString(15);");
+  allMetrics.push_back("	string myCost = NumberToString(0);");
+  allMetrics.push_back("	string perfDataQuery (\"INSERT INTO performanceData VALUES(\"\"'\" + modelName + \"'\" + \", \" + myFlowIdNumber + \",\" + \"'\" + myStatus + \"'\" + \",\" + \"'\" + mySourceName + \"'\" + \",\" + \"'\" + myDestName + \"'\" + \",\" + \"'\" + myExpectedReliability + \"'\" + \",\" + \"'\" + myExpectedDelay + \"'\" + \",\" + myactualReliability + \",\" + myactualDelay + \",\" + mytxPackets + \",\" + myrxPackets + \",\" + mythroughput + \",\" + \"'\" + myCost + \"'\" + \");\"  );");
+  allMetrics.push_back("	query( perfDataQuery.c_str() );");
+  allMetrics.push_back("");
+  allMetrics.push_back("");
+
+  allMetrics.push_back("  }");
+  allMetrics.push_back(" ");
+
+  std::vector<std::string> flowBuild = GenerateFlowCpp();
+  for(size_t i = 0; i <  flowBuild.size(); i++)
+  {
+    allMetrics.push_back("  " + flowBuild.at(i));
+  }
+
+  allMetrics.push_back(" ");
+  allMetrics.push_back("  cout << \" \" << endl;");
+  allMetrics.push_back("  cout << \" \" << endl;");
+  allMetrics.push_back("  cout << \"================================================\" << endl;");
+  allMetrics.push_back("  cout << \"=================Summary========================\" << endl;");
+  allMetrics.push_back("  cout << \"================================================\" << endl;");
+  allMetrics.push_back("  cout << \"All Tx Packets: \" << txPacketsum << endl;");
+  allMetrics.push_back("  cout << \"All Rx Packets: \" << rxPacketsum << endl;");
+  allMetrics.push_back("  cout << \"All Delay: \" << Delaysum / txPacketsum << endl;");
+  allMetrics.push_back("  cout << \"All Lost Packets: \" << LostPacketsum << endl;");
+  allMetrics.push_back("  cout << \"All Drop Packets: \" << DropPacketsum << endl;");
+  allMetrics.push_back("");
+  allMetrics.push_back("  if (txPacketsum != 0)");
+  allMetrics.push_back("  {");
+  allMetrics.push_back("    cout << \"Packets Delivery Ratio: \" << ((rxPacketsum * 100) / txPacketsum) << \"%\" << endl;");
+  allMetrics.push_back("    cout << \"Packets Lost Ratio: \" << ((LostPacketsum * 100) / txPacketsum) << \"%\" << endl;");
+  allMetrics.push_back("  }");
+  allMetrics.push_back("");
+  allMetrics.push_back("  	double newLostPacketsum = LostPacketsum/txPacketsum;");
+  allMetrics.push_back("    // Summary information for all packet flows");
+  allMetrics.push_back("	string mytx = NumberToString(txPacketsum);");
+  allMetrics.push_back("	string myrx = NumberToString(rxPacketsum);");
+  allMetrics.push_back("	string myDelay = NumberToString(Delaysum / txPacketsum);");
+  allMetrics.push_back("	string myLost = NumberToString(LostPacketsum);");
+  allMetrics.push_back("	string myDrop = NumberToString(DropPacketsum);");
+  allMetrics.push_back("	string myDelRatio = NumberToString((rxPacketsum) / txPacketsum);");
+  allMetrics.push_back(" 	string myLostRatio = NumberToString(newLostPacketsum);");
+  allMetrics.push_back("");
+  allMetrics.push_back("	query(\"CREATE TABLE if not exists summary (ModelName VARCHAR (20), TxPackets STRING, RxPackets STRING, Delay STRING, LostPackets STRING, DroppedPackets STRING, PacketDeliveryRatio STRING, PacketLostRatio STRING);\");");
+  allMetrics.push_back("	string mysqlquery (\"INSERT INTO summary VALUES(\"\"'\" + modelName + \"'\" + \", \" + mytx + \", \" + myrx + \", \" + myDelay + \", \" + myLost + \", \" + myDrop + \", \" + myDelRatio + \", \" + myLostRatio + \");\"  );");
+  allMetrics.push_back("	query( mysqlquery.c_str() );");
+  allMetrics.push_back("");
+  allMetrics.push_back("	// close the database");
+  allMetrics.push_back("	sqlite3_close(database);");
+
+  return allMetrics;
 }
 
 //

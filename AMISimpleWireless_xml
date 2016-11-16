@@ -9,47 +9,47 @@
         <node>
             <type>Station</type>
             <name>station_1</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_2</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_3</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_4</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_5</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_6</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_7</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Station</type>
             <name>station_8</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>AccessPoint</type>
             <name>ap_0</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Pc</type>
@@ -59,12 +59,12 @@
         <node>
             <type>Pc</type>
             <name>term_1</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
         <node>
             <type>Pc</type>
             <name>term_2</name>
-            <enableFlowmonitor>false</enableFlowmonitor>
+            <enableFlowmonitor>true</enableFlowmonitor>
         </node>
     </Nodes>
     <NetworkHardwares>
@@ -239,4 +239,54 @@
             </special>
         </application>
     </Applications>
+    <Flows>
+        <flow>
+            <type>WifiFlow</type>
+            <name>wifi_flow_0</name>
+            <source>station_0</source>
+            <destination>term_0</destination>
+            <expectedDelaySeconds>20</expectedDelaySeconds>
+            <expectedReliabilityPercent>0.96</expectedReliabilityPercent>
+        </flow>
+        <flow>
+            <type>WifiFlow</type>
+            <name>wifi_flow_1</name>
+            <source>term_0</source>
+            <destination>station_0</destination>
+            <expectedDelaySeconds>20</expectedDelaySeconds>
+            <expectedReliabilityPercent>0.96</expectedReliabilityPercent>
+        </flow>
+        <flow>
+            <type>MultiHopFlow</type>
+            <name>multi_hop_flow_0</name>
+            <source>station_4</source>
+            <destination>term_0</destination>
+            <expectedDelaySeconds>10</expectedDelaySeconds>
+            <expectedReliabilityPercent>0.99</expectedReliabilityPercent>            
+        </flow>
+        <flow>
+            <type>MultiHopFlow</type>
+            <name>multi_hop_flow_1</name>
+            <source>term_0</source>
+            <destination>station_4</destination>
+            <expectedDelaySeconds>10</expectedDelaySeconds>
+            <expectedReliabilityPercent>0.99</expectedReliabilityPercent>            
+        </flow>
+        <flow>
+            <type>WiredFlow</type>
+            <name>wired_flow_0</name>
+            <source>station_8</source>
+            <destination>term_0</destination>
+            <expectedDelaySeconds>5</expectedDelaySeconds>
+            <expectedReliabilityPercent>0.97</expectedReliabilityPercent>            
+        </flow>
+        <flow>
+            <type>WiredFlow</type>
+            <name>wired_flow_1</name>
+            <source>term_0</source>
+            <destination>station_8</destination>
+            <expectedDelaySeconds>5</expectedDelaySeconds>
+            <expectedReliabilityPercent>0.97</expectedReliabilityPercent>            
+        </flow>
+    </Flows>    
 </Gen>

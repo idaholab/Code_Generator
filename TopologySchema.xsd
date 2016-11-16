@@ -46,6 +46,17 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
+	<!--
+	linkType: a simpleType enumerating all the possible flow types available for a topology
+	-->
+	<xsd:simpleType name="flowType" final="restriction">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="WifiFlow"/>
+			<xsd:enumeration value="MultiHopFlow"/>
+			<xsd:enumeration value="WiredFlow"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
          <xsd:element name="Gen">
                <xsd:complexType>
                      <xsd:sequence>
@@ -113,6 +124,24 @@
                                                                            </xsd:sequence>
                                                                      </xsd:complexType>
                                                                </xsd:element>
+                                                         </xsd:sequence>
+                                                   </xsd:complexType>
+                                             </xsd:element>
+                                       </xsd:sequence>
+                                 </xsd:complexType>
+                           </xsd:element>
+                           <xsd:element name="Flows">
+                                 <xsd:complexType>
+                                       <xsd:sequence>
+                                             <xsd:element name="flow" minOccurs="0" maxOccurs="unbounded">
+                                                   <xsd:complexType>
+                                                         <xsd:sequence>
+                                                               <xsd:element name="type" type="flowType"></xsd:element>
+                                                               <xsd:element name="name" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="source" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="destination" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="expectedDelaySeconds" type="xsd:string"></xsd:element>
+                                                               <xsd:element name="expectedReliabilityPercent" type="xsd:string"></xsd:element>
                                                          </xsd:sequence>
                                                    </xsd:complexType>
                                              </xsd:element>

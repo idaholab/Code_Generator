@@ -209,6 +209,17 @@ cerr << "gen->AddApplication(" << (*ai).type() << ", " << (*ai).sender() << ", "
 
   }
 
+/// Flow information ///
+i = 0;
+Gen::Flows_type::flow_const_iterator fi = g->Flows().flow().begin();
+for (; fi != g->Flows().flow().end(); fi++)
+  {
+cerr << "gen->AddFlow(" << (*fi).type() << ", " << (*fi).name() << ", " << (*fi).source() << ", " << (*fi).destination() << ", " << (*fi).expectedDelaySeconds() << ", " << (*fi).expectedReliabilityPercent() << ")" << endl;
+
+  gen->AddFlow((*fi).type(), (*fi).name(), (*fi).source(), (*fi).destination(), (*fi).expectedDelaySeconds(), (*fi).expectedReliabilityPercent());
+  i++;
+  }
+
 /// Generate ns-3 cc file ///
   gen->GenerateCodeCpp(argv[2]);
   delete gen;

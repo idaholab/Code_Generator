@@ -22,7 +22,7 @@ override LIBS := -lxerces-c $(LIBS)
 	$(XSD) cxx-tree $(XSDFLAGS) $<
 
 CXX = g++
-OBJS = kern/generator.o kern/node.o kern/network-hardware.o kern/hub.o kern/point-to-point.o kern/bridge.o kern/ap.o kern/application.o kern/ping.o kern/udp-echo.o kern/tcp-large-transfer.o kern/tap.o kern/emu.o kern/utils.o kern/udp.o kern/udp-cosem.o kern/data-concentrator.o kern/meter-data-management.o kern/demand-response.o
+OBJS = kern/generator.o kern/node.o kern/network-hardware.o kern/hub.o kern/point-to-point.o kern/bridge.o kern/ap.o kern/application.o kern/ping.o kern/udp-echo.o kern/tcp-large-transfer.o kern/tap.o kern/emu.o kern/utils.o kern/udp.o kern/udp-cosem.o kern/data-concentrator.o kern/meter-data-management.o kern/demand-response.o kern/flow.o
 
 override XSDFLAGS += --generate-inline --generate-ostream --generate-serialization
 

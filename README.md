@@ -13,13 +13,11 @@ generation capability.
 You need the CodeSynthesis XSD library to compile and use ns-3 code generator.  XSD utilizes
 the Xerces XML parser, so that needs to be installed also.
 
-If not already installed, the code generator depends on SQLite3, GNOME XML, and GTK+, they can be installed by issuing the following commands (Ubuntu);
+If not already installed, the code generator depends on SQLite3, and GNOME XML, they can be installed by issuing the following commands (Ubuntu);
 
 $ sudo apt-get install sqlite sqlite3 libsqlite3-dev
 
 $ sudo apt-get install libxml2 libxml2-dev
-
-$ sudo apt-get install libgtk2.0-0 libgtk2.0-dev
 
 To build the project:
 Make sure a valid XML instance specification (XML Schema) file is colocated with the Makefile.
